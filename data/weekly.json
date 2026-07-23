@@ -1,0 +1,366 @@
+[
+  {
+    "week_start": "2024-09-02",
+    "miles": 10.0
+  },
+  {
+    "week_start": "2024-09-16",
+    "miles": 19.1
+  },
+  {
+    "week_start": "2024-09-30",
+    "miles": 8.1
+  },
+  {
+    "week_start": "2024-10-07",
+    "miles": 12.0
+  },
+  {
+    "week_start": "2024-10-14",
+    "miles": 20.2
+  },
+  {
+    "week_start": "2024-10-21",
+    "miles": 15.6
+  },
+  {
+    "week_start": "2024-10-28",
+    "miles": 29.8
+  },
+  {
+    "week_start": "2024-11-04",
+    "miles": 19.5
+  },
+  {
+    "week_start": "2024-11-11",
+    "miles": 3.1
+  },
+  {
+    "week_start": "2024-11-18",
+    "miles": 12.0
+  },
+  {
+    "week_start": "2024-11-25",
+    "miles": 3.2
+  },
+  {
+    "week_start": "2024-12-02",
+    "miles": 7.8
+  },
+  {
+    "week_start": "2024-12-09",
+    "miles": 13.8
+  },
+  {
+    "week_start": "2024-12-16",
+    "miles": 10.2
+  },
+  {
+    "week_start": "2024-12-23",
+    "miles": 6.5
+  },
+  {
+    "week_start": "2024-12-30",
+    "miles": 12.4
+  },
+  {
+    "week_start": "2025-01-06",
+    "miles": 12.5
+  },
+  {
+    "week_start": "2025-01-13",
+    "miles": 11.2
+  },
+  {
+    "week_start": "2025-01-20",
+    "miles": 14.3
+  },
+  {
+    "week_start": "2025-01-27",
+    "miles": 9.4
+  },
+  {
+    "week_start": "2025-02-03",
+    "miles": 12.5
+  },
+  {
+    "week_start": "2025-02-10",
+    "miles": 12.0
+  },
+  {
+    "week_start": "2025-02-17",
+    "miles": 26.4
+  },
+  {
+    "week_start": "2025-02-24",
+    "miles": 30.3
+  },
+  {
+    "week_start": "2025-03-03",
+    "miles": 31.3
+  },
+  {
+    "week_start": "2025-03-10",
+    "miles": 37.2
+  },
+  {
+    "week_start": "2025-03-17",
+    "miles": 15.3
+  },
+  {
+    "week_start": "2025-03-24",
+    "miles": 34.3
+  },
+  {
+    "week_start": "2025-03-31",
+    "miles": 22.0
+  },
+  {
+    "week_start": "2025-04-07",
+    "miles": 37.6
+  },
+  {
+    "week_start": "2025-04-14",
+    "miles": 5.2
+  },
+  {
+    "week_start": "2025-04-21",
+    "miles": 3.2
+  },
+  {
+    "week_start": "2025-04-28",
+    "miles": 17.4
+  },
+  {
+    "week_start": "2025-05-05",
+    "miles": 14.8
+  },
+  {
+    "week_start": "2025-05-12",
+    "miles": 27.4
+  },
+  {
+    "week_start": "2025-05-19",
+    "miles": 12.5
+  },
+  {
+    "week_start": "2025-05-26",
+    "miles": 11.9
+  },
+  {
+    "week_start": "2025-06-02",
+    "miles": 12.3
+  },
+  {
+    "week_start": "2025-06-09",
+    "miles": 17.9
+  },
+  {
+    "week_start": "2025-06-16",
+    "miles": 12.2
+  },
+  {
+    "week_start": "2025-06-23",
+    "miles": 8.6
+  },
+  {
+    "week_start": "2025-06-30",
+    "miles": 20.9
+  },
+  {
+    "week_start": "2025-07-07",
+    "miles": 13.0
+  },
+  {
+    "week_start": "2025-07-21",
+    "miles": 9.8
+  },
+  {
+    "week_start": "2025-07-28",
+    "miles": 24.7
+  },
+  {
+    "week_start": "2025-08-04",
+    "miles": 20.5
+  },
+  {
+    "week_start": "2025-08-11",
+    "miles": 39.4
+  },
+  {
+    "week_start": "2025-08-18",
+    "miles": 41.1
+  },
+  {
+    "week_start": "2025-08-25",
+    "miles": 23.9
+  },
+  {
+    "week_start": "2025-09-01",
+    "miles": 43.6
+  },
+  {
+    "week_start": "2025-09-08",
+    "miles": 28.3
+  },
+  {
+    "week_start": "2025-09-15",
+    "miles": 28.8
+  },
+  {
+    "week_start": "2025-09-22",
+    "miles": 44.7
+  },
+  {
+    "week_start": "2025-09-29",
+    "miles": 45.0
+  },
+  {
+    "week_start": "2025-10-06",
+    "miles": 30.1
+  },
+  {
+    "week_start": "2025-10-13",
+    "miles": 34.5
+  },
+  {
+    "week_start": "2025-10-20",
+    "miles": 28.9
+  },
+  {
+    "week_start": "2025-10-27",
+    "miles": 36.0
+  },
+  {
+    "week_start": "2025-11-03",
+    "miles": 12.5
+  },
+  {
+    "week_start": "2025-11-10",
+    "miles": 18.0
+  },
+  {
+    "week_start": "2025-11-24",
+    "miles": 5.2
+  },
+  {
+    "week_start": "2025-12-01",
+    "miles": 30.4
+  },
+  {
+    "week_start": "2025-12-08",
+    "miles": 21.4
+  },
+  {
+    "week_start": "2025-12-15",
+    "miles": 39.5
+  },
+  {
+    "week_start": "2025-12-22",
+    "miles": 16.2
+  },
+  {
+    "week_start": "2025-12-29",
+    "miles": 8.0
+  },
+  {
+    "week_start": "2026-01-05",
+    "miles": 25.3
+  },
+  {
+    "week_start": "2026-01-12",
+    "miles": 28.2
+  },
+  {
+    "week_start": "2026-01-19",
+    "miles": 17.2
+  },
+  {
+    "week_start": "2026-01-26",
+    "miles": 10.0
+  },
+  {
+    "week_start": "2026-02-02",
+    "miles": 27.2
+  },
+  {
+    "week_start": "2026-02-09",
+    "miles": 22.5
+  },
+  {
+    "week_start": "2026-02-16",
+    "miles": 15.3
+  },
+  {
+    "week_start": "2026-02-23",
+    "miles": 29.1
+  },
+  {
+    "week_start": "2026-03-02",
+    "miles": 38.3
+  },
+  {
+    "week_start": "2026-03-09",
+    "miles": 22.4
+  },
+  {
+    "week_start": "2026-03-16",
+    "miles": 31.1
+  },
+  {
+    "week_start": "2026-03-23",
+    "miles": 14.3
+  },
+  {
+    "week_start": "2026-03-30",
+    "miles": 28.3
+  },
+  {
+    "week_start": "2026-04-06",
+    "miles": 7.0
+  },
+  {
+    "week_start": "2026-04-13",
+    "miles": 41.9
+  },
+  {
+    "week_start": "2026-04-27",
+    "miles": 4.1
+  },
+  {
+    "week_start": "2026-05-04",
+    "miles": 12.1
+  },
+  {
+    "week_start": "2026-05-11",
+    "miles": 13.1
+  },
+  {
+    "week_start": "2026-05-18",
+    "miles": 10.9
+  },
+  {
+    "week_start": "2026-05-25",
+    "miles": 17.7
+  },
+  {
+    "week_start": "2026-06-01",
+    "miles": 6.2
+  },
+  {
+    "week_start": "2026-06-15",
+    "miles": 7.0
+  },
+  {
+    "week_start": "2026-06-22",
+    "miles": 26.5
+  },
+  {
+    "week_start": "2026-06-29",
+    "miles": 11.1
+  },
+  {
+    "week_start": "2026-07-06",
+    "miles": 14.1
+  }
+]

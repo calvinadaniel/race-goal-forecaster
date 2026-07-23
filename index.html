@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Running Analysis</title>
+  <meta name="description" content="Personal Strava running dashboard with pace trends and Boston Marathon qualifying projections." />
+  <script>(function(){if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark');}());</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header class="app-header">
+  <h1 class="app-header__title">Running <span>Analysis</span></h1>
+  <button id="theme-toggle" type="button" aria-label="Switch to dark mode">
+    <svg id="icon-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg id="icon-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+</header>
+
+<main>
+
+  <section class="hero">
+    <h1>Running Analysis</h1>
+    <p class="hero__meta">Sep 2024 – Present · Boston Marathon Trajectory</p>
+  </section>
+
+  <section class="about">
+    <div>
+      <h2 class="section-label">What This Is</h2>
+      <p>This dashboard pulls training data from Strava using a custom Python pipeline. Every activity — easy runs, long runs, and races — is processed into weekly and monthly aggregates, giving a clear picture of fitness and trajectory.</p>
+    </div>
+    <div>
+      <h2 class="section-label">What It Answers</h2>
+      <p>Pace trends, heart rate efficiency, weekly mileage, and relative effort are charted across the full dataset. The core question: based on current marathon and half marathon trajectory, when is a Boston Qualifier realistic?</p>
+    </div>
+  </section>
+
+  <section class="summary-section">
+    <div class="summary-bar">
+      <div class="stat-chip">
+        <span id="stat-runs" class="stat-chip-value">—</span>
+        <span class="stat-chip-label">Total Runs</span>
+      </div>
+      <div class="stat-chip">
+        <span id="stat-miles" class="stat-chip-value">—</span>
+        <span class="stat-chip-label">Total Miles</span>
+      </div>
+      <div class="stat-chip">
+        <span id="stat-time" class="stat-chip-value">—</span>
+        <span class="stat-chip-label">Total Hours</span>
+      </div>
+      <div class="stat-chip">
+        <span id="stat-pace" class="stat-chip-value">—</span>
+        <span class="stat-chip-label">Current Avg Pace</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="dashboard-grid">
+
+    <div class="panel panel--wide">
+      <h2 class="panel-title">Pace Trend</h2>
+      <p class="panel-subtitle">Monthly average pace with regression trend line</p>
+      <div class="chart-wrap"><canvas id="chart-pace"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Heart Rate Efficiency</h2>
+      <p class="panel-subtitle">Pace vs. HR — newer runs should appear lower-right</p>
+      <div class="chart-wrap"><canvas id="chart-hr"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel-title">Weekly Volume</h2>
+      <p class="panel-subtitle">Total miles per week</p>
+      <div class="chart-wrap"><canvas id="chart-volume"></canvas></div>
+    </div>
+
+    <div class="panel panel--wide">
+      <h2 class="panel-title">Relative Effort</h2>
+      <p class="panel-subtitle">Strava suffer score per month with 4-month rolling average</p>
+      <div class="chart-wrap"><canvas id="chart-effort"></canvas></div>
+    </div>
+
+    <div class="panel panel--wide panel--hero">
+      <h2 class="panel-title">Boston Qualifier Projection</h2>
+      <p class="panel-subtitle">Current PR: 3:54:23 · BQ target: 3:05:00 (Males 40–44) · Target pace: 7:03/mi</p>
+      <div class="chart-wrap chart-wrap--tall"><canvas id="chart-bq"></canvas></div>
+    </div>
+
+    <div class="panel panel--wide">
+      <h2 class="panel-title">Race History</h2>
+      <p class="panel-subtitle">Marathons and half marathons only — the data points used for BQ trajectory analysis</p>
+
+      <div class="race-block">
+        <h3>Marathons</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Finish Time</th>
+                <th>Avg Pace</th>
+                <th>vs. Previous</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Nov 3, 2024</td>
+                <td class="time">4:42:44</td>
+                <td class="pace">10:38 /mi</td>
+                <td>First Marathon</td>
+              </tr>
+              <tr>
+                <td>Apr 13, 2025</td>
+                <td class="time">4:11:12</td>
+                <td class="pace">9:32 /mi</td>
+                <td class="delta--up">&minus;31:32</td>
+              </tr>
+              <tr>
+                <td>Nov 2, 2025</td>
+                <td class="time">4:16:58</td>
+                <td class="pace">9:39 /mi</td>
+                <td>+5:46 (NYC)</td>
+              </tr>
+              <tr>
+                <td>Apr 19, 2026</td>
+                <td class="time highlight">3:54:23</td>
+                <td class="pace highlight">8:49 /mi</td>
+                <td class="delta--up">&minus;22:35 &nbsp;<span class="accent">PR</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="race-block">
+        <h3>Half Marathons — Best Times</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Finish Time</th>
+                <th>Avg Pace</th>
+                <th>Predicted Marathon</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Oct 19, 2024</td>
+                <td class="time">2:05:10</td>
+                <td class="pace">9:33 /mi</td>
+                <td>~4:22</td>
+              </tr>
+              <tr>
+                <td>Mar 30, 2025</td>
+                <td class="time">1:48:17</td>
+                <td class="pace">8:09 /mi</td>
+                <td>~3:47</td>
+              </tr>
+              <tr>
+                <td>Oct 18, 2025</td>
+                <td class="time">1:46:58</td>
+                <td class="pace">8:07 /mi</td>
+                <td>~3:45</td>
+              </tr>
+              <tr>
+                <td>Mar 15, 2026</td>
+                <td class="time highlight">1:43:24</td>
+                <td class="pace highlight">7:46 /mi</td>
+                <td class="highlight">~3:37 &nbsp;<span class="accent">PR</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel--wide">
+      <h2 class="panel-title">BQ Analysis &amp; Projection</h2>
+      <p class="panel-subtitle">Based on marathon and half marathon race results — not average training pace</p>
+      <div class="bq-grid">
+        <div class="bq-copy">
+          <p>Four marathons in 17 months tells a clear story. From a 4:42 debut at NYC in November 2024 to a 3:54:23 PR at Delaware in April 2026, the overall improvement is <span class="accent font-mono">48 minutes and 21 seconds</span> — nearly a minute per month. The half marathon data reinforces it: a March 2026 PR of <span class="accent font-mono">1:43:24 (7:46/mi)</span> predicts a marathon of approximately <span class="accent font-mono">3:37</span> using standard race-equivalency models, suggesting the current PR of 3:54 still has significant room to fall as marathon-specific fitness catches up to aerobic capacity.</p>
+          <p>The BQ standard for the 40–44 age group is <span class="accent font-mono">3:05:00</span> — a 7:03/mi pace for 26.2 miles. That's still 49 minutes below the current PR, but the trajectory says the gap is closing fast. If the improvement rate holds across the next two marathon cycles, a sub-3:35 is realistic by late 2026 or Spring 2027. From there, breaking 3:10 — and qualifying — becomes a matter of sustained volume and race execution rather than raw aerobic development.</p>
+          <p>The honest projection: <span class="accent font-mono">2027–2028</span>. The half marathon fitness is already pointing there. The marathon just needs to catch up.</p>
+        </div>
+        <div class="bq-stats">
+          <div class="bq-stat">
+            <div class="bq-stat__label">Current Marathon PR</div>
+            <div class="bq-stat__value">3:54:23</div>
+          </div>
+          <div class="bq-stat">
+            <div class="bq-stat__label">HM-Predicted Marathon</div>
+            <div class="bq-stat__value">~3:37</div>
+          </div>
+          <div class="bq-stat bq-stat--target">
+            <div class="bq-stat__label">BQ Target</div>
+            <div class="bq-stat__value">3:05:00</div>
+          </div>
+          <div class="bq-stat">
+            <div class="bq-stat__label">Projected Window</div>
+            <div class="bq-stat__value">2027–28</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer class="app-footer">
+  Running Analysis · Data from Strava · © 2026 Calvin Daniel
+</footer>
+
+<script src="js/theme-toggle.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
