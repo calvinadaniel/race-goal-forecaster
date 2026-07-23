@@ -1,64 +1,67 @@
-# Running Analysis
+# Race Goal Forecaster
 
-Personal Strava running dashboard with weekly mileage charts and Boston Marathon qualifying time projections.
+Free Strava-connected race finish-time forecaster. Set a goal distance, target time, race date, and training posture (Conservative / Balanced / Aggressive) to see if you're on track.
 
-Static frontend (Chart.js) + local Python pipeline. No backend required.
+## Live
 
-## Quick start
+Production: [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
 
-```bash
-# Serve the dashboard (JSON fetch needs a local server)
-python -m http.server 8000
-# Open http://localhost:8000
-```
+Before Strava login works in production, set these in the Vercel project env and run `npm run db:push` against Neon:
 
-## Data pipeline
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `AUTH_STRAVA_ID`
+- `AUTH_STRAVA_SECRET`
+- `AUTH_URL=https://race-goal-forecaster.vercel.app`
 
-### 1. Install dependencies
+Register Strava callback domain for the Vercel host (`race-goal-forecaster.vercel.app`).
 
-```bash
-pip install -r scripts/requirements.txt
-```
+## Stack
 
-### 2. Strava credentials
+- Next.js App Router (Vercel)
+- Auth.js + Strava OAuth
+- Neon Postgres + Drizzle ORM
+- TypeScript forecast engine (Riegel equivalency)
 
-```bash
-cp scripts/.env.example scripts/.env
-# Fill in STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET from https://www.strava.com/settings/api
-```
+## Setup
 
-Register redirect URI `http://localhost:8080/callback` on your Strava API app, then authorize once:
+1. Copy env template:
 
 ```bash
-python scripts/strava_auth.py
+cp .env.example .env.local
 ```
 
-### 3. Refresh data
+2. Create a [Neon](https://neon.tech) database and set `DATABASE_URL`.
+
+3. Create a [Strava API app](https://www.strava.com/settings/api). Set authorization callback domain to your host (e.g. `localhost` for local, your Vercel domain in production). Auth.js uses `/api/auth/callback/strava`.
+
+4. Set `AUTH_STRAVA_ID`, `AUTH_STRAVA_SECRET`, and `AUTH_SECRET` (e.g. `openssl rand -base64 32`).
+
+5. Push schema and run:
 
 ```bash
-python scripts/fetch_strava.py
-python scripts/process.py
-python scripts/project.py
+npm install
+npm run db:push
+npm run dev
 ```
 
-Or on Windows, run `scripts/weekly_refresh.ps1` to fetch, process, project, and commit updated JSON.
+Open [http://localhost:3000](http://localhost:3000).
 
-### 4. Tests
+## Scripts
 
-```bash
-cd scripts && pytest
-```
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Local Next.js server |
+| `npm test` | Forecast engine unit tests |
+| `npm run db:push` | Push Drizzle schema to Neon |
+| `npm run build` | Production build |
 
-## Project layout
+## Product notes
 
-```
-├── index.html          # Dashboard
-├── css/                # theme.css + dashboard.css
-├── js/                 # theme-toggle.js + dashboard.js
-├── data/               # Baked JSON (committed)
-└── scripts/            # Strava fetch → aggregate → BQ projection
-```
+- Strava is the only activity source in MVP (`ActivitySource` interface is ready for Garmin/COROS/Apple later).
+- Cold start: requires ~8 weeks of history + a quality effort, or a manual baseline race.
+- Legacy static dashboard + Python scripts remain under `index.html`, `css/`, `js/`, `data/`, `scripts/` as reference only.
 
-## Notes
+## Disclaimer
 
-Extracted from the [calvin-daniel](https://github.com/calvinadaniel) portfolio. The portfolio still hosts a copy at `/projects/running-analysis-app/`; this repo is the standalone home for further development.
+Estimates only — not coaching or medical advice.
