@@ -4,7 +4,10 @@ Free Strava-connected race finish-time forecaster. Set a goal distance, target t
 
 ## Live
 
-Production: [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+- App: [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+- Repo: [https://github.com/calvinadaniel/race-goal-forecaster](https://github.com/calvinadaniel/race-goal-forecaster)
+
+Pushes to `master` deploy via the linked Vercel project.
 
 Before Strava login works in production, set these in the Vercel project env and run `npm run db:push` against Neon:
 
