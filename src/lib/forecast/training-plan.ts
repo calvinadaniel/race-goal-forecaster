@@ -37,8 +37,8 @@ export type TrainingPlan = {
 const VOLUME_FLOOR: Record<DistanceKey, number> = {
   "5k": 20,
   "10k": 25,
-  half: 30,
-  marathon: 35,
+  half: 32,
+  marathon: 42,
 };
 
 const VOLUME_CAP: Record<DistanceKey, number> = {
@@ -46,6 +46,14 @@ const VOLUME_CAP: Record<DistanceKey, number> = {
   "10k": 45,
   half: 50,
   marathon: 60,
+};
+
+/** Peak long-run targets runners expect by distance (pre-taper). */
+const LONG_PEAK: Record<DistanceKey, number> = {
+  "5k": 10,
+  "10k": 12,
+  half: 14,
+  marathon: 20,
 };
 
 const INTENSITY_BUMP: Record<Intensity, number> = {
@@ -113,11 +121,44 @@ function peakWeeklyMiles(
   const bump =
     INTENSITY_BUMP[intensity] * (verdict === "on_track" ? 1 : verdict === "at_risk" ? 1.05 : 1.1);
   const raw = Math.max(floor, (recentWeeklyMiles || floor) * bump);
-  return Math.round(Math.min(cap, raw));
+  // Weekly peak must be able to host the distance's peak long (~38–42% of week)
+  const longSupport = Math.ceil(LONG_PEAK[distanceKey] / 0.4);
+  return Math.round(Math.min(cap, Math.max(raw, longSupport)));
 }
 
 function runsPerWeekFor(intensity: Intensity): number {
   return intensity === "conservative" ? 4 : intensity === "balanced" ? 5 : 6;
+}
+
+/** Absolute long-run progression toward distance peak — not only % of weekly volume. */
+function longRunMiles(args: {
+  distanceKey: DistanceKey;
+  weeklyMiles: number;
+  phase: Phase;
+  weekIndex: number;
+  totalWeeks: number;
+}): number {
+  const peakLong = LONG_PEAK[args.distanceKey];
+  const taperWeeks = Math.min(3, Math.max(1, Math.round(args.totalWeeks * 0.15)));
+  const buildWeeks = Math.max(1, args.totalWeeks - taperWeeks);
+
+  if (args.phase === "Taper" || args.weekIndex >= buildWeeks) {
+    const step = Math.max(0, args.weekIndex - buildWeeks);
+    const factors = [0.6, 0.45, 0.35];
+    return Math.max(6, Math.round(peakLong * (factors[step] ?? 0.35)));
+  }
+
+  const startLong = Math.min(
+    Math.round(peakLong * 0.45),
+    Math.max(args.distanceKey === "marathon" ? 8 : 5, Math.round(args.weeklyMiles * 0.22)),
+  );
+  const buildProgress = buildWeeks === 1 ? 1 : args.weekIndex / (buildWeeks - 1);
+  const target = Math.round(startLong + (peakLong - startLong) * buildProgress);
+  // Cap at 42% of the week so other runs still fit; weekly peak is sized to allow peak long
+  const weekCap = Math.max(startLong, Math.round(args.weeklyMiles * 0.42));
+  const deload = args.weekIndex > 0 && (args.weekIndex + 1) % 4 === 0 && args.weekIndex < buildWeeks - 1;
+  const miles = Math.min(peakLong, target, weekCap);
+  return Math.round(deload ? miles * 0.85 : miles);
 }
 
 function weekMilesForPhase(
@@ -171,9 +212,13 @@ function buildWeekTemplate(args: {
   const runsPerWeek = runsPerWeekFor(intensity);
   const progress = totalWeeks <= 1 ? 1 : weekIndex / Math.max(1, totalWeeks - 1);
 
-  const longShare =
-    distanceKey === "marathon" ? 0.3 : distanceKey === "half" ? 0.28 : 0.25;
-  const longMi = Math.round(weeklyMiles * longShare);
+  const longMi = longRunMiles({
+    distanceKey,
+    weeklyMiles,
+    phase,
+    weekIndex,
+    totalWeeks,
+  });
   const qualityMi =
     intensity === "conservative"
       ? Math.max(3, Math.round(weeklyMiles * 0.15))
