@@ -2,6 +2,19 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.1.1] — 2026-07-24
+
+Marathon (and half) long-run progression fix.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Training
+
+- Long runs no longer capped by a flat `% of weekly volume` alone (that peaked marathon longs around **11 mi**)
+- Absolute long-run targets by distance: **marathon → ~20 mi**, half → ~14 mi (pre-taper)
+- Weekly peak volume raised so those longs fit in the week
+- Longs still ramp early → peak → taper/deload
+
 ## [1.1.0] — 2026-07-24
 
 Progressive training plans and a clearer Forecast history view.
@@ -78,5 +91,6 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.1.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.1.1
 [1.1.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.1.0
 [1.0.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.0.0
