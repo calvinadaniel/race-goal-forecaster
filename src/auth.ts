@@ -54,12 +54,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token_type: account.token_type,
           })
           .where(eq(accounts.providerAccountId, athleteId));
+        const raw = profile as Record<string, unknown> | undefined;
+        const image =
+          (typeof raw?.image === "string" && raw.image) ||
+          (typeof raw?.picture === "string" && raw.picture) ||
+          (typeof raw?.profile === "string" && raw.profile) ||
+          (typeof raw?.profile_medium === "string" && raw.profile_medium) ||
+          null;
+        const name = profile?.name ?? null;
+        if (image || name) {
+          await db
+            .update(users)
+            .set({
+              ...(image ? { image } : {}),
+              ...(name ? { name } : {}),
+            })
+            .where(eq(users.id, userId));
+        }
       } else {
+        const raw = profile as Record<string, unknown> | undefined;
+        const image =
+          (typeof raw?.image === "string" && raw.image) ||
+          (typeof raw?.picture === "string" && raw.picture) ||
+          (typeof raw?.profile === "string" && raw.profile) ||
+          (typeof raw?.profile_medium === "string" && raw.profile_medium) ||
+          null;
         const [created] = await db
           .insert(users)
           .values({
             name: profile?.name ?? "Runner",
-            image: (profile as { image?: string } | undefined)?.image ?? null,
+            image,
             stravaAthleteId: athleteId,
             units: "mi",
           })
@@ -97,7 +121,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user && token.userId) {
-        session.user.id = token.userId as string;
+        const userId = token.userId as string;
+        session.user.id = userId;
+        const db = getDb();
+        const [user] = await db
+          .select({ name: users.name, image: users.image })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        if (user) {
+          session.user.name = user.name;
+          session.user.image = user.image;
+        }
       }
       return session;
     },

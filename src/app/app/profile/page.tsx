@@ -49,13 +49,37 @@ export default function ProfilePage() {
       }
     >
       <main className="container app-page">
-        <p className="eyebrow">Profile</p>
-        <h1 className="display" style={{ fontSize: "clamp(2rem, 6vw, 3rem)", margin: "0.35rem 0 0.75rem" }}>
-          {profile.year} stats
-        </h1>
-        <p className="muted" style={{ margin: "0 0 1.25rem", lineHeight: 1.55 }}>
-          From your synced Strava runs this calendar year.
-        </p>
+        <div className="profile-hero">
+          {profile.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              className="profile-hero__avatar"
+              src={profile.image}
+              alt=""
+              width={72}
+              height={72}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="profile-hero__avatar profile-hero__avatar--placeholder" aria-hidden="true">
+              {(profile.name ?? "R").slice(0, 1).toUpperCase()}
+            </div>
+          )}
+          <div>
+            <p className="eyebrow" style={{ margin: 0 }}>
+              Profile
+            </p>
+            <h1
+              className="display"
+              style={{ fontSize: "clamp(1.8rem, 5vw, 2.6rem)", margin: "0.25rem 0" }}
+            >
+              {profile.name ?? "Runner"}
+            </h1>
+            <p className="muted" style={{ margin: 0, lineHeight: 1.5 }}>
+              {profile.year} stats from synced Strava runs
+            </p>
+          </div>
+        </div>
 
         <div className="profile-grid">
           <article className="card">

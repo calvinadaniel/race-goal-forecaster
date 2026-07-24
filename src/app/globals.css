@@ -445,6 +445,54 @@ label {
   opacity: 0.85;
 }
 
+.plan-day--race {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.plan-full {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.plan-full__week {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.plan-full__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  align-items: baseline;
+}
+
+.profile-hero {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.profile-hero__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.profile-hero__avatar--placeholder {
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--pine);
+  font-family: var(--type-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
 .app-shell {
   min-height: 100vh;
   display: grid;

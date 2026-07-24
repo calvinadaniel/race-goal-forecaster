@@ -2,21 +2,35 @@ import { DISTANCES, type DistanceKey } from "./distances";
 import { POSTURE_LABELS, type Intensity } from "./postures";
 
 type Verdict = "on_track" | "at_risk" | "unlikely";
+type Phase = "Base" | "Build" | "Peak" | "Taper";
 
 export type PlanDay = {
   day: string;
-  focus: "easy" | "quality" | "long" | "rest" | "optional";
+  date?: string;
+  focus: "easy" | "quality" | "long" | "rest" | "optional" | "race";
   title: string;
   detail: string;
 };
 
+export type PlanWeek = {
+  weekIndex: number;
+  weekStart: string;
+  phase: Phase;
+  weeklyMiles: number;
+  days: PlanDay[];
+};
+
 export type TrainingPlan = {
-  phase: "Base" | "Build" | "Peak" | "Taper";
+  phase: Phase;
   weeklyMiles: number;
   runsPerWeek: number;
   goalPacePerMi: string;
   weeksOut: number;
+  startDate: string;
+  endDate: string;
+  /** Current / first week — used on Forecast as the initial suggestion */
   days: PlanDay[];
+  weeks: PlanWeek[];
   notes: string[];
 };
 
@@ -40,7 +54,39 @@ const INTENSITY_BUMP: Record<Intensity, number> = {
   aggressive: 1.15,
 };
 
-function phaseForMonths(months: number): TrainingPlan["phase"] {
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+function addDays(d: Date, n: number): Date {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+}
+
+function iso(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function mondayOnOrBefore(d: Date): Date {
+  const x = startOfDay(d);
+  const day = x.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  return addDays(x, -diff);
+}
+
+function monthsBetween(from: Date, to: Date): number {
+  return Math.max(0, (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24 * 30.4375));
+}
+
+function phaseForMonths(months: number): Phase {
   if (months >= 4) return "Base";
   if (months >= 2) return "Build";
   if (months >= 0.75) return "Peak";
@@ -56,7 +102,7 @@ function pacePerMile(targetTimeSec: number, distanceM: number): string {
   return `${m}:${String(s).padStart(2, "0")}/mi`;
 }
 
-function weeklyTarget(
+function peakWeeklyMiles(
   distanceKey: DistanceKey,
   recentWeeklyMiles: number,
   intensity: Intensity,
@@ -70,37 +116,45 @@ function weeklyTarget(
   return Math.round(Math.min(cap, raw));
 }
 
-/** One-week template scaled to posture + race phase. Not coaching — a starting skeleton. */
-export function buildTrainingPlan(args: {
-  distanceKey: DistanceKey;
-  distanceM: number;
-  targetTimeSec: number;
+function runsPerWeekFor(intensity: Intensity): number {
+  return intensity === "conservative" ? 4 : intensity === "balanced" ? 5 : 6;
+}
+
+function weekMilesForPhase(
+  phase: Phase,
+  weekIndex: number,
+  totalWeeks: number,
+  startMiles: number,
+  peakMiles: number,
+): number {
+  if (phase === "Taper") return Math.max(8, Math.round(peakMiles * 0.62));
+  if (totalWeeks <= 1) return peakMiles;
+  const ramp = Math.min(1, weekIndex / Math.max(1, totalWeeks - 2));
+  const target = startMiles + (peakMiles - startMiles) * ramp;
+  if (phase === "Peak") return Math.round(Math.max(target, peakMiles * 0.95));
+  return Math.round(target);
+}
+
+function buildWeekTemplate(args: {
+  phase: Phase;
+  weeklyMiles: number;
   intensity: Intensity;
-  verdict: Verdict;
-  monthsToRace: number;
-  recentWeeklyMiles: number;
-}): TrainingPlan {
-  const phase = phaseForMonths(args.monthsToRace);
-  const weeksOut = Math.max(1, Math.round(args.monthsToRace * 4.345));
-  const weeklyMiles = weeklyTarget(
-    args.distanceKey,
-    args.recentWeeklyMiles,
-    args.intensity,
-    args.verdict,
-  );
-  const pace = pacePerMile(args.targetTimeSec, args.distanceM);
-  const dist = DISTANCES[args.distanceKey].label;
+  pace: string;
+  distanceKey: DistanceKey;
+  weekStart: Date;
+  raceDate: Date;
+}): PlanDay[] {
+  const { phase, weeklyMiles, intensity, pace, distanceKey, weekStart, raceDate } = args;
+  const raceIso = iso(raceDate);
+  const runsPerWeek = runsPerWeekFor(intensity);
 
   const longShare =
-    args.distanceKey === "marathon" ? 0.3 : args.distanceKey === "half" ? 0.28 : 0.25;
+    distanceKey === "marathon" ? 0.3 : distanceKey === "half" ? 0.28 : 0.25;
   const longMi = Math.round(weeklyMiles * longShare);
   const qualityMi =
-    args.intensity === "conservative"
+    intensity === "conservative"
       ? Math.max(3, Math.round(weeklyMiles * 0.15))
       : Math.max(4, Math.round(weeklyMiles * 0.2));
-
-  const runsPerWeek =
-    args.intensity === "conservative" ? 4 : args.intensity === "balanced" ? 5 : 6;
 
   const qualityTitle =
     phase === "Taper"
@@ -114,7 +168,7 @@ export function buildTrainingPlan(args: {
       ? `20–30 min easy + 2–3 × 3 min @ ~${pace}, full recoveries.`
       : phase === "Base"
         ? `${qualityMi} mi continuous @ comfortably hard (slower than ${pace}).`
-        : args.distanceKey === "marathon" || args.distanceKey === "half"
+        : distanceKey === "marathon" || distanceKey === "half"
           ? `${qualityMi} mi with 3–5 × 1 mi @ ~${pace}, jog recoveries.`
           : `${qualityMi} mi with 6–10 × 400–800m @ faster than ${pace}, jog recoveries.`;
 
@@ -128,26 +182,46 @@ export function buildTrainingPlan(args: {
     Math.round((weeklyMiles - longMi - qualityMi) / Math.max(1, runsPerWeek - 2)),
   );
 
-  const days: PlanDay[] =
+  const skeleton: Omit<PlanDay, "date">[] =
     runsPerWeek >= 6
       ? [
           { day: "Mon", focus: "easy", title: "Easy", detail: `${easyFill} mi easy.` },
           { day: "Tue", focus: "quality", title: qualityTitle, detail: qualityDetail },
           { day: "Wed", focus: "easy", title: "Easy", detail: `${easyFill} mi easy.` },
-          { day: "Thu", focus: "optional", title: "Optional easy / strides", detail: `${Math.max(3, easyFill - 1)} mi easy + 4 strides.` },
+          {
+            day: "Thu",
+            focus: "optional",
+            title: "Optional easy / strides",
+            detail: `${Math.max(3, easyFill - 1)} mi easy + 4 strides.`,
+          },
           { day: "Fri", focus: "rest", title: "Rest", detail: "Full rest or 20–30 min walk." },
           { day: "Sat", focus: "long", title: "Long run", detail: longDetail },
-          { day: "Sun", focus: "easy", title: "Easy shakeout", detail: `${Math.max(3, easyFill - 1)} mi easy.` },
+          {
+            day: "Sun",
+            focus: "easy",
+            title: "Easy shakeout",
+            detail: `${Math.max(3, easyFill - 1)} mi easy.`,
+          },
         ]
       : runsPerWeek === 5
         ? [
             { day: "Mon", focus: "rest", title: "Rest", detail: "Full rest or easy walk." },
             { day: "Tue", focus: "quality", title: qualityTitle, detail: qualityDetail },
             { day: "Wed", focus: "easy", title: "Easy", detail: `${easyFill} mi easy.` },
-            { day: "Thu", focus: "easy", title: "Easy + strides", detail: `${easyFill} mi easy + 4 strides.` },
+            {
+              day: "Thu",
+              focus: "easy",
+              title: "Easy + strides",
+              detail: `${easyFill} mi easy + 4 strides.`,
+            },
             { day: "Fri", focus: "rest", title: "Rest", detail: "Full rest." },
             { day: "Sat", focus: "long", title: "Long run", detail: longDetail },
-            { day: "Sun", focus: "easy", title: "Easy", detail: `${Math.max(3, easyFill - 1)} mi easy.` },
+            {
+              day: "Sun",
+              focus: "easy",
+              title: "Easy",
+              detail: `${Math.max(3, easyFill - 1)} mi easy.`,
+            },
           ]
         : [
             { day: "Mon", focus: "rest", title: "Rest", detail: "Full rest." },
@@ -159,23 +233,131 @@ export function buildTrainingPlan(args: {
             { day: "Sun", focus: "easy", title: "Easy", detail: `${easyFill} mi easy.` },
           ];
 
-  const notes = [
-    `~${weeklyMiles} mi/week target for a ${dist} under ${POSTURE_LABELS[args.intensity].toLowerCase()} load (${phase}, ~${weeksOut} weeks out).`,
-    `Goal pace ≈ ${pace}. Easy days should feel conversational — leave quality for the marked session.`,
-    "Cut volume 20–30% if sore, sick, or sleep-deprived. This is a template, not personalized coaching.",
-  ];
+  return skeleton.map((slot, i) => {
+    const date = addDays(weekStart, i);
+    const dateStr = iso(date);
+    if (dateStr === raceIso) {
+      return {
+        ...slot,
+        day: WEEKDAYS[i],
+        date: dateStr,
+        focus: "race" as const,
+        title: "Race day",
+        detail: `Goal race — target ~${pace}. Trust the taper.`,
+      };
+    }
+    return { ...slot, day: WEEKDAYS[i], date: dateStr };
+  });
+}
 
-  if (phase === "Taper") {
-    notes.unshift("Taper week: protect freshness over mileage.");
+/** Full plan from today through race day, plus `days` = this week for Forecast. */
+export function buildTrainingPlan(args: {
+  distanceKey: DistanceKey;
+  distanceM: number;
+  targetTimeSec: number;
+  intensity: Intensity;
+  verdict: Verdict;
+  monthsToRace: number;
+  recentWeeklyMiles: number;
+  raceDate: Date;
+  asOf?: Date;
+}): TrainingPlan {
+  const asOf = startOfDay(args.asOf ?? new Date());
+  const raceDate = startOfDay(args.raceDate);
+  const end = raceDate < asOf ? asOf : raceDate;
+  const firstMonday = mondayOnOrBefore(asOf);
+  const lastMonday = mondayOnOrBefore(end);
+
+  const peak = peakWeeklyMiles(
+    args.distanceKey,
+    args.recentWeeklyMiles,
+    args.intensity,
+    args.verdict,
+  );
+  const startMiles = Math.max(
+    VOLUME_FLOOR[args.distanceKey] * 0.85,
+    Math.round(args.recentWeeklyMiles || peak * 0.75),
+  );
+  const pace = pacePerMile(args.targetTimeSec, args.distanceM);
+  const runsPerWeek = runsPerWeekFor(args.intensity);
+
+  const weeks: PlanWeek[] = [];
+  let cursor = firstMonday;
+  let weekIndex = 0;
+  // ponytail: hard cap 52 weeks — longer goals still get a year of plan
+  while (cursor <= lastMonday && weekIndex < 52) {
+    const monthsLeft = monthsBetween(cursor, end);
+    const phase = phaseForMonths(monthsLeft);
+    const weeklyMiles = weekMilesForPhase(
+      phase,
+      weekIndex,
+      Math.max(
+        1,
+        Math.round((lastMonday.getTime() - firstMonday.getTime()) / (7 * 86400000)) + 1,
+      ),
+      startMiles,
+      peak,
+    );
+    const days = buildWeekTemplate({
+      phase,
+      weeklyMiles,
+      intensity: args.intensity,
+      pace,
+      distanceKey: args.distanceKey,
+      weekStart: cursor,
+      raceDate: end,
+    });
+
+    weeks.push({
+      weekIndex: weekIndex + 1,
+      weekStart: iso(cursor),
+      phase,
+      weeklyMiles,
+      days,
+    });
+
+    cursor = addDays(cursor, 7);
+    weekIndex += 1;
   }
 
+  if (weeks.length === 0) {
+    const phase = phaseForMonths(args.monthsToRace);
+    const days = buildWeekTemplate({
+      phase,
+      weeklyMiles: peak,
+      intensity: args.intensity,
+      pace,
+      distanceKey: args.distanceKey,
+      weekStart: firstMonday,
+      raceDate: end,
+    });
+    weeks.push({
+      weekIndex: 1,
+      weekStart: iso(firstMonday),
+      phase,
+      weeklyMiles: peak,
+      days,
+    });
+  }
+
+  const current = weeks[0];
+  const dist = DISTANCES[args.distanceKey].label;
+  const notes = [
+    `Plan runs ${iso(asOf)} → ${iso(end)} (${weeks.length} week${weeks.length === 1 ? "" : "s"}) for a ${dist}.`,
+    `Peak ~${peak} mi/week under ${POSTURE_LABELS[args.intensity].toLowerCase()} load. Goal pace ≈ ${pace}.`,
+    "Cut volume 20–30% if sore, sick, or sleep-deprived. Template only — not personalized coaching.",
+  ];
+
   return {
-    phase,
-    weeklyMiles,
+    phase: current.phase,
+    weeklyMiles: current.weeklyMiles,
     runsPerWeek,
     goalPacePerMi: pace,
-    weeksOut,
-    days,
+    weeksOut: weeks.length,
+    startDate: iso(asOf),
+    endDate: iso(end),
+    days: current.days,
+    weeks,
     notes,
   };
 }

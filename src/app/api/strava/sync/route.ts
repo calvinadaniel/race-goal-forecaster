@@ -1,8 +1,14 @@
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { getDb } from "@/db";
-import { accounts, activities } from "@/db/schema";
-import { getValidStravaToken, stravaSource } from "@/lib/strava";
+import { accounts, activities, users } from "@/db/schema";
+import {
+  athleteDisplayName,
+  athleteImageUrl,
+  fetchStravaAthlete,
+  getValidStravaToken,
+  stravaSource,
+} from "@/lib/strava";
 import { NextResponse } from "next/server";
 
 export async function POST() {
@@ -32,6 +38,23 @@ export async function POST() {
         expires_at: token.expiresAt,
       })
       .where(eq(accounts.userId, session.user.id));
+  }
+
+  try {
+    const athlete = await fetchStravaAthlete(token.accessToken);
+    const image = athleteImageUrl(athlete);
+    const name = athleteDisplayName(athlete);
+    if (image || name) {
+      await db
+        .update(users)
+        .set({
+          ...(image ? { image } : {}),
+          ...(name ? { name } : {}),
+        })
+        .where(eq(users.id, session.user.id));
+    }
+  } catch {
+    // Profile photo/name is best-effort; activity sync should still proceed.
   }
 
   const since = new Date();

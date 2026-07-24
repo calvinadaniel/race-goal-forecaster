@@ -323,6 +323,8 @@ export function computeForecast(input: ForecastInput): ForecastResult {
       verdict: primary.verdict,
       monthsToRace,
       recentWeeklyMiles,
+      raceDate: input.raceDate,
+      asOf,
     }),
     kpis: buildKpis(
       primary.predictedTimeSec,

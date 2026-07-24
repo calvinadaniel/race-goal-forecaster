@@ -25,7 +25,16 @@ export type ForecastPayload = {
       runsPerWeek: number;
       goalPacePerMi: string;
       weeksOut: number;
-      days: { day: string; focus: string; title: string; detail: string }[];
+      startDate?: string;
+      endDate?: string;
+      days: { day: string; date?: string; focus: string; title: string; detail: string }[];
+      weeks?: {
+        weekIndex: number;
+        weekStart: string;
+        phase: string;
+        weeklyMiles: number;
+        days: { day: string; date?: string; focus: string; title: string; detail: string }[];
+      }[];
       notes: string[];
     } | null;
     kpis: {
@@ -58,6 +67,8 @@ export type ForecastPayload = {
   };
   profile: {
     year: number;
+    name: string | null;
+    image: string | null;
     ytdMiles: number;
     avgPaceSecPerMi: number | null;
     racesCompleted: number;

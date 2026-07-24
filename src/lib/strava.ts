@@ -69,6 +69,35 @@ export async function getValidStravaToken(account: {
   };
 }
 
+export type StravaAthleteProfile = {
+  id: number;
+  firstname?: string;
+  lastname?: string;
+  profile?: string;
+  profile_medium?: string;
+};
+
+export async function fetchStravaAthlete(
+  accessToken: string,
+): Promise<StravaAthleteProfile> {
+  const resp = await fetch("https://www.strava.com/api/v3/athlete", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!resp.ok) {
+    throw new Error(`Strava athlete fetch failed: ${resp.status}`);
+  }
+  return resp.json();
+}
+
+export function athleteDisplayName(athlete: StravaAthleteProfile): string | null {
+  const parts = [athlete.firstname, athlete.lastname].filter(Boolean);
+  return parts.length ? parts.join(" ") : null;
+}
+
+export function athleteImageUrl(athlete: StravaAthleteProfile): string | null {
+  return athlete.profile || athlete.profile_medium || null;
+}
+
 export class StravaActivitySource implements ActivitySource {
   async listActivities(
     accessToken: string,

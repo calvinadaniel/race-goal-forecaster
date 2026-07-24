@@ -132,6 +132,40 @@ export default function ForecastPage() {
               </div>
             </section>
 
+            {forecast.trainingPlan && (
+              <section className="app-section">
+                <h2 className="display section-title">This week&apos;s suggestion</h2>
+                <p className="muted" style={{ margin: "0 0 0.75rem", lineHeight: 1.5 }}>
+                  {forecast.trainingPlan.phase} · {forecast.trainingPlan.weeklyMiles} mi · goal pace{" "}
+                  {forecast.trainingPlan.goalPacePerMi}
+                </p>
+                <div className="plan-week">
+                  {forecast.trainingPlan.days.map((d) => (
+                    <article
+                      key={`${d.day}-${d.date ?? d.title}`}
+                      className={`card plan-day plan-day--${d.focus}`}
+                    >
+                      <p className="eyebrow" style={{ margin: 0 }}>
+                        {d.day}
+                        {d.date ? ` · ${d.date.slice(5)}` : ""}
+                      </p>
+                      <p className="display" style={{ fontSize: "1.1rem", margin: "0.35rem 0" }}>
+                        {d.title}
+                      </p>
+                      <p className="muted" style={{ margin: 0, fontSize: "0.85rem", lineHeight: 1.45 }}>
+                        {d.detail}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+                <p style={{ margin: "0.85rem 0 0" }}>
+                  <Link href="/app/training" style={{ color: "var(--accent)", fontWeight: 700 }}>
+                    Full plan to race day →
+                  </Link>
+                </p>
+              </section>
+            )}
+
             <section className="app-section">
               <h2 className="display section-title">What if intensity changes?</h2>
               <div className="scenario-grid">
@@ -192,6 +226,23 @@ export default function ForecastPage() {
                 </div>
               </div>
             </section>
+
+            {strip.topEfforts.length > 0 && (
+              <section className="app-section">
+                <h2 className="display section-title">Recent activities</h2>
+                <div className="card">
+                  <ul style={{ margin: 0, paddingLeft: "1rem", lineHeight: 1.7 }}>
+                    {strip.topEfforts.map((e) => (
+                      <li key={e.id}>
+                        <span className="mono">{e.date}</span> · {e.name || "Run"} ·{" "}
+                        {formatDuration(e.movingTimeSec)}
+                        {e.isRace ? " · race" : ""}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+            )}
 
             <p className="mono muted" style={{ fontSize: "0.75rem", paddingBottom: "1rem" }}>
               Estimate only — not coaching or medical advice.

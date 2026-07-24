@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getDb } from "@/db";
-import { activities, goals } from "@/db/schema";
+import { activities, goals, users } from "@/db/schema";
 import { computeForecast } from "@/lib/forecast/engine";
 import type { DistanceKey } from "@/lib/forecast/distances";
 import type { Intensity } from "@/lib/forecast/postures";
@@ -80,6 +80,12 @@ export async function GET() {
   const avgPaceSecPerMi =
     ytdMiles > 0.5 ? ytdSeconds / ytdMiles : null;
 
+  const [user] = await db
+    .select({ name: users.name, image: users.image })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+
   return NextResponse.json({
     goal: {
       distanceKey: goal.distanceKey,
@@ -96,6 +102,8 @@ export async function GET() {
     },
     profile: {
       year,
+      name: user?.name ?? session.user.name ?? null,
+      image: user?.image ?? session.user.image ?? null,
       ytdMiles,
       avgPaceSecPerMi,
       racesCompleted: ytd.filter((r) => r.isRace).length,
