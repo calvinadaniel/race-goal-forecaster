@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RGF · Direction 3 — Runna Clarity</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f7f3eb;
+      --surface: #efe8dc;
+      --ink: #1c2a22;
+      --muted: rgba(28,42,34,0.62);
+      --accent: #c45c26;
+      --pine: #3f6b4f;
+      --line: rgba(28,42,34,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    .wrap { width: min(1100px, calc(100% - 2rem)); margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.1rem 0;
+    }
+    .logo {
+      font-family: Outfit, sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.03em;
+    }
+    .logo span { color: var(--accent); }
+    .btn {
+      background: var(--accent);
+      color: #fffaf5;
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.8rem 1.2rem;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      padding: 2rem 0 3rem;
+      align-items: center;
+    }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(63,107,79,0.12);
+      color: var(--pine);
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-family: Outfit, sans-serif;
+      font-size: clamp(2.6rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.045em;
+      line-height: 1.02;
+      margin-bottom: 1rem;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      max-width: 30rem;
+    }
+    .hero-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 18px 40px rgba(28,42,34,0.06);
+    }
+    .week {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.35rem;
+      margin-bottom: 1.25rem;
+    }
+    .day {
+      text-align: center;
+      padding: 0.55rem 0.2rem;
+      border-radius: 0.55rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: rgba(28,42,34,0.04);
+    }
+    .day.on {
+      background: var(--ink);
+      color: var(--bg);
+    }
+    .day.accent {
+      background: var(--accent);
+      color: #fff;
+    }
+    .v-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .v-status {
+      font-family: Outfit, sans-serif;
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--pine);
+      line-height: 1;
+      margin: 0.35rem 0;
+    }
+    .v-time {
+      font-family: Outfit, sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      padding-bottom: 3rem;
+    }
+    .step {
+      background: #fffdf8;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      padding: 1.25rem;
+    }
+    .step .n {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.55rem;
+      background: rgba(196,92,38,0.12);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+    .step h3 {
+      font-family: Outfit, sans-serif;
+      font-size: 1.15rem;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+    .step p { color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 1.5rem 0 2.5rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    @media (max-width: 800px) {
+      .hero, .steps { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">Race Goal <span>Forecaster</span></div>
+      <button class="btn" type="button">Continue with Strava</button>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="kicker">Personalized race forecast</div>
+        <h1>Your plan starts with an honest finish time.</h1>
+        <p class="lede">
+          Like Runna’s goal-first coaching flow — set the race, set the intensity,
+          see a clear verdict before you commit to the block.
+        </p>
+        <button class="btn" type="button">Continue with Strava</button>
+      </div>
+
+      <aside class="hero-card" aria-label="Forecast preview">
+        <div class="week" aria-hidden="true">
+          <div class="day">M</div>
+          <div class="day on">T</div>
+          <div class="day">W</div>
+          <div class="day accent">T</div>
+          <div class="day">F</div>
+          <div class="day on">S</div>
+          <div class="day">S</div>
+        </div>
+        <p class="v-label">Today’s forecast</p>
+        <p class="v-status">On track</p>
+        <p class="v-time">1:42:18 <span style="color:var(--muted);font-weight:600;font-size:1rem;">goal 1:45:00</span></p>
+        <p style="margin-top:0.85rem;color:var(--muted);font-size:0.9rem;line-height:1.45;">
+          Balanced posture · Half · Oct 18. Built from your best recent efforts + weekly volume.
+        </p>
+      </aside>
+    </section>
+
+    <section class="steps">
+      <article class="step">
+        <div class="n">1</div>
+        <h3>Connect Strava</h3>
+        <p>We sync your runs and pull quality efforts near race distances.</p>
+      </article>
+      <article class="step">
+        <div class="n">2</div>
+        <h3>Set the race</h3>
+        <p>Distance, target time, race date, and how hard you’ll train.</p>
+      </article>
+      <article class="step">
+        <div class="n">3</div>
+        <h3>Get the verdict</h3>
+        <p>On track / At risk / Unlikely — plus what-if intensity scenarios.</p>
+      </article>
+    </section>
+
+    <footer>
+      Estimate only — not coaching or medical advice. Direction 3 · Runna clarity
+      (light sand canvas, rounded coaching cards, week strip, verdict-first hierarchy).
+    </footer>
+  </div>
+</body>
+</html>

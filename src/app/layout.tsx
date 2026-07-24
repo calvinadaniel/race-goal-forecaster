@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Fraunces, IBM_Plex_Mono, Source_Sans_3 } from "next/font/google";
+import { Bricolage_Grotesque, IBM_Plex_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  variable: "--font-bricolage",
 });
 
-const sourceSans = Source_Sans_3({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-source-sans",
+  variable: "--font-manrope",
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -30,10 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${fraunces.variable} ${sourceSans.variable} ${plexMono.variable}`}>
-        {children}
-      </body>
+    <html
+      lang="en"
+      className={`${bricolage.variable} ${manrope.variable} ${plexMono.variable}`}
+    >
+      <body className={manrope.className}>{children}</body>
     </html>
   );
 }

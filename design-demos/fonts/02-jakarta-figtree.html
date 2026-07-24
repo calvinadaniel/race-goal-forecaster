@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Font B · Jakarta + Figtree</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f7f3eb; --surface: #efe8dc; --ink: #1c2a22;
+      --muted: rgba(28,42,34,0.62); --accent: #c45c26; --pine: #3f6b4f;
+      --line: rgba(28,42,34,0.1);
+      --display: "Plus Jakarta Sans", system-ui, sans-serif;
+      --sans: "Figtree", system-ui, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--ink); }
+    .wrap { width: min(1100px, calc(100% - 2rem)); margin: 0 auto; padding: 1.25rem 0 2rem; }
+    .tag { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .logo { font-family: var(--display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.03em; }
+    .logo span { color: var(--accent); }
+    .btn { background: var(--accent); color: #fffaf5; border: 0; border-radius: 0.75rem; padding: 0.8rem 1.2rem; font-family: var(--sans); font-weight: 700; font-size: 0.92rem; }
+    .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; }
+    .kicker { display: inline-flex; background: rgba(63,107,79,0.12); color: var(--pine); font-weight: 700; font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 999px; margin-bottom: 1rem; }
+    h1 { font-family: var(--display); font-size: clamp(2.4rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.02; margin-bottom: 1rem; text-wrap: balance; max-width: 16ch; }
+    .lede { color: var(--muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 1.5rem; max-width: 30rem; text-wrap: pretty; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 1.25rem; padding: 1.5rem; }
+    .v-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    .v-status { font-family: var(--display); font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em; color: var(--pine); margin: 0.35rem 0; }
+    .v-time { font-family: var(--mono); font-size: 1.35rem; font-weight: 600; }
+    .v-time span { color: var(--muted); font-size: 1rem; }
+    .note { margin-top: 0.85rem; color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+    .meta { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+    @media (max-width: 800px) { .hero { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="tag">Package B · Benchmark · Plus Jakarta Sans + Figtree + JetBrains Mono</p>
+    <header>
+      <div class="logo">Race Goal <span>Forecaster</span></div>
+      <button class="btn" type="button">Continue with Strava</button>
+    </header>
+    <section class="hero">
+      <div>
+        <div class="kicker">Personalized race forecast</div>
+        <h1>Your plan starts with an honest finish time.</h1>
+        <p class="lede">Goal-first coaching flow — set the race, set the intensity, see a clear verdict before you commit to the block.</p>
+        <button class="btn" type="button">Continue with Strava</button>
+      </div>
+      <aside class="card">
+        <p class="v-label">Today’s forecast</p>
+        <p class="v-status">On track</p>
+        <p class="v-time">1:42:18 <span>goal 1:45:00</span></p>
+        <p class="note">Balanced posture · Half · Oct 18. Built from your best recent efforts + weekly volume.</p>
+      </aside>
+    </section>
+    <p class="meta">Coaching-app clarity: soft geometric headlines, friendly UI body, crisp mono clock.</p>
+  </div>
+</body>
+</html>

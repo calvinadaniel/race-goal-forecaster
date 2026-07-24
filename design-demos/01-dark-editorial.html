@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RGF · Direction 1 — Dark Editorial</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f1713;
+      --panel: #1c2a22;
+      --sand: #f7f3eb;
+      --muted: rgba(247,243,235,0.55);
+      --accent: #c45c26;
+      --pine: #3f6b4f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--sand);
+      font-family: "Syne", system-ui, sans-serif;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+    }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 2rem 1.5rem;
+      border-right: 1px solid rgba(247,243,235,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .brand { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
+    .brand span { color: var(--accent); }
+    nav { display: flex; flex-direction: column; gap: 0.85rem; }
+    nav a {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    nav a.active, nav a:hover { color: var(--accent); }
+    .cta {
+      margin-top: auto;
+      background: var(--accent);
+      color: #fff7ef;
+      border: none;
+      padding: 0.85rem 1rem;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      width: 100%;
+    }
+    main { padding: 3rem 4rem 5rem; max-width: 980px; }
+    .num {
+      font-family: "IBM Plex Mono", monospace;
+      color: var(--accent);
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: clamp(3rem, 7vw, 5.2rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+      max-width: 12ch;
+      margin-bottom: 1.25rem;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.65;
+      max-width: 36rem;
+      font-weight: 500;
+    }
+    .grid {
+      margin-top: 3.5rem;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.25rem;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(247,243,235,0.08);
+      padding: 1.5rem;
+    }
+    .card h3 {
+      font-size: 1.35rem;
+      margin: 0.35rem 0 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .card p { color: var(--muted); font-size: 0.92rem; line-height: 1.55; font-weight: 500; }
+    .verdict {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      align-items: end;
+      background: linear-gradient(135deg, #1c2a22, #15201a);
+      border: 1px solid rgba(196,92,38,0.35);
+      padding: 1.75rem;
+    }
+    .verdict .label {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .verdict .big {
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--pine);
+      line-height: 1;
+      margin-top: 0.4rem;
+    }
+    .verdict .time {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 1.6rem;
+      margin-top: 0.5rem;
+    }
+    .muted-sm { color: var(--muted); font-size: 0.85rem; margin-top: 0.35rem; }
+    footer {
+      margin-top: 3rem;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 40rem;
+    }
+    @media (max-width: 900px) {
+      body { grid-template-columns: 1fr; }
+      aside { height: auto; position: relative; border-right: none; border-bottom: 1px solid rgba(247,243,235,0.08); }
+      .grid, .verdict { grid-template-columns: 1fr; }
+      main { padding: 2rem 1.25rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="brand">Race Goal <span>Forecaster</span></div>
+    <nav>
+      <a class="active" href="#01">01 — Forecast</a>
+      <a href="#02">02 — How it works</a>
+      <a href="#03">03 — Verdict</a>
+      <a href="#04">04 — Disclaimer</a>
+    </nav>
+    <button class="cta" type="button">Continue with Strava</button>
+  </aside>
+  <main>
+    <p class="num" id="01">01 / FORECAST</p>
+    <h1>Will you hit your race goal?</h1>
+    <p class="lede">
+      Connect Strava. Set a finish time and race date. Choose how hard you’ll train.
+      Get a clear on-track verdict — built from your best efforts, not junk-mile averages.
+    </p>
+
+    <div class="grid" id="02">
+      <article class="card">
+        <p class="num">02.A</p>
+        <h3>Goal + race date</h3>
+        <p>5K, 10K, half, or marathon. Target time and the day you toe the line.</p>
+      </article>
+      <article class="card">
+        <p class="num">02.B</p>
+        <h3>Training posture</h3>
+        <p>Conservative, Balanced, or Aggressive — the improvement ceiling you accept.</p>
+      </article>
+      <div class="verdict" id="03">
+        <div>
+          <p class="label">Sample verdict</p>
+          <p class="big">On track</p>
+          <p class="muted-sm">Balanced posture · Half marathon</p>
+        </div>
+        <div>
+          <p class="label">Projected</p>
+          <p class="time">1:42:18</p>
+          <p class="muted-sm">vs goal 1:45:00</p>
+        </div>
+        <div>
+          <p class="label">Race day</p>
+          <p class="time" style="font-size:1.25rem">Oct 18, 2026</p>
+          <p class="muted-sm">Confidence: medium</p>
+        </div>
+      </div>
+    </div>
+
+    <footer id="04">
+      Estimate only — not coaching or medical advice. Direction 1 · Roulette: Dark Editorial
+      (deep pine canvas, terracotta accent, sticky mono nav — Brittany Chiang / athletic portfolio DNA).
+    </footer>
+  </main>
+</body>
+</html>

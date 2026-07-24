@@ -61,6 +61,13 @@ export type ForecastResult = {
     equivalentSec: number;
   }[];
   why: string[];
+  tips: string[];
+  kpis: {
+    gapSec: number;
+    gapPct: number;
+    fitnessRatio: number;
+    volumeScore: number;
+  };
   scenarios: ScenarioResult[];
   history: {
     recentWeeklyMiles: number;
@@ -203,16 +210,22 @@ export function computeForecast(input: ForecastInput): ForecastResult {
   );
 
   if (!gate.ok) {
+    const vol = volumeFactor(input.weeklyMiles);
+    const monthsToRace = monthsBetween(asOf, input.raceDate);
     return {
       verdict: "unlikely",
       predictedTimeSec: input.targetTimeSec,
       targetTimeSec: input.targetTimeSec,
       currentEquivalentSec: input.targetTimeSec,
       confidence: "low",
-      monthsToRace: monthsBetween(asOf, input.raceDate),
-      volumeFactor: volumeFactor(input.weeklyMiles),
+      monthsToRace,
+      volumeFactor: vol,
       effortsUsed: [],
       why: ["Not enough history to forecast yet."],
+      tips: [
+        "Sync more Strava history or add a recent race/time-trial baseline on the goal screen.",
+      ],
+      kpis: buildKpis(input.targetTimeSec, input.targetTimeSec, input.targetTimeSec, vol),
       scenarios: [],
       history: {
         recentWeeklyMiles: avgRecentMiles(input.weeklyMiles),
@@ -268,6 +281,19 @@ export function computeForecast(input: ForecastInput): ForecastResult {
     `${monthsToRace.toFixed(1)} months until race day.`,
   ];
 
+  const recentWeeklyMiles = avgRecentMiles(input.weeklyMiles);
+  const tips = buildTips({
+    verdict: primary.verdict,
+    intensity: input.intensity,
+    predictedTimeSec: primary.predictedTimeSec,
+    targetTimeSec: input.targetTimeSec,
+    currentEquivalentSec,
+    monthsToRace,
+    volumeFactor: vol,
+    recentWeeklyMiles,
+    scenarios,
+  });
+
   return {
     verdict: primary.verdict,
     predictedTimeSec: primary.predictedTimeSec,
@@ -285,9 +311,16 @@ export function computeForecast(input: ForecastInput): ForecastResult {
       equivalentSec: item.equivalentSec,
     })),
     why,
+    tips,
+    kpis: buildKpis(
+      primary.predictedTimeSec,
+      input.targetTimeSec,
+      currentEquivalentSec,
+      vol,
+    ),
     scenarios,
     history: {
-      recentWeeklyMiles: avgRecentMiles(input.weeklyMiles),
+      recentWeeklyMiles,
       weeksWithRuns: input.weeklyMiles.filter((w) => w.miles > 0).length,
     },
     needsBaseline: false,
@@ -300,6 +333,90 @@ function avgRecentMiles(weeklyMiles: { miles: number }[]): number {
   if (!recent.length) return 0;
   return recent.reduce((s, w) => s + w.miles, 0) / recent.length;
 }
+
+function buildKpis(
+  predictedTimeSec: number,
+  targetTimeSec: number,
+  currentEquivalentSec: number,
+  volumeFactor: number,
+) {
+  const gapSec = predictedTimeSec - targetTimeSec;
+  return {
+    gapSec,
+    gapPct: targetTimeSec > 0 ? gapSec / targetTimeSec : 0,
+    fitnessRatio: targetTimeSec > 0 ? currentEquivalentSec / targetTimeSec : 1,
+    volumeScore: volumeFactor,
+  };
+}
+
+function buildTips(args: {
+  verdict: Verdict;
+  intensity: Intensity;
+  predictedTimeSec: number;
+  targetTimeSec: number;
+  currentEquivalentSec: number;
+  monthsToRace: number;
+  volumeFactor: number;
+  recentWeeklyMiles: number;
+  scenarios: ScenarioResult[];
+}): string[] {
+  const tips: string[] = [];
+  const gapSec = args.predictedTimeSec - args.targetTimeSec;
+  const fitnessGap = args.currentEquivalentSec - args.targetTimeSec;
+
+  if (args.verdict === "on_track") {
+    tips.push(
+      "Hold weekly volume steady and keep one quality session (tempo or long run) so fitness doesn’t fade before race day.",
+    );
+    if (args.monthsToRace > 3) {
+      tips.push(
+        "With months left, schedule a tune-up race or time trial at ~half goal distance to re-check the forecast.",
+      );
+    }
+  } else {
+    if (gapSec > 0) {
+      tips.push(
+        `Projected finish is ~${formatRough(gapSec)} slower than goal — close that gap with quality work, not junk miles.`,
+      );
+    }
+    if (fitnessGap > 0) {
+      tips.push(
+        `Current race-distance fitness sits ~${formatRough(fitnessGap)} off goal. Add a weekly tempo or interval session near goal pace.`,
+      );
+    }
+    if (args.volumeFactor < 0.9) {
+      const targetMiles = Math.max(30, Math.round(args.recentWeeklyMiles * 1.15) || 30);
+      tips.push(
+        `Volume/consistency is soft (factor ${args.volumeFactor.toFixed(2)}). Nudge toward ~${targetMiles}+ mi/week with ≥3 run days.`,
+      );
+    }
+    const harder = args.scenarios.find(
+      (s) =>
+        s.intensity !== args.intensity &&
+        (s.verdict === "on_track" || s.verdict === "at_risk") &&
+        s.predictedTimeSec < args.predictedTimeSec,
+    );
+    if (harder && args.intensity !== "aggressive") {
+      tips.push(
+        `${harder.label} posture projects ${formatRough(harder.predictedTimeSec)} (${VERDICT_WORD[harder.verdict]}). Only step up intensity if recovery stays solid.`,
+      );
+    }
+    if (args.monthsToRace < 2 && args.verdict === "unlikely") {
+      tips.push(
+        "Under ~2 months left: prioritize race-pace reps and a honest long run; or ease the target time if the goal is still a stretch.",
+      );
+    }
+  }
+
+  // ponytail: rule tips only — LLM plans if users want personalized coaching later
+  return tips.slice(0, 4);
+}
+
+const VERDICT_WORD: Record<Verdict, string> = {
+  on_track: "on track",
+  at_risk: "at risk",
+  unlikely: "unlikely",
+};
 
 function formatRough(sec: number): string {
   const h = Math.floor(sec / 3600);

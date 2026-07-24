@@ -90,5 +90,7 @@ describe("computeForecast", () => {
       weeklyMiles: weeks,
     });
     expect(result.verdict).toBe("unlikely");
+    expect(result.tips.length).toBeGreaterThan(0);
+    expect(result.kpis.gapSec).toBeGreaterThan(0);
   });
 });

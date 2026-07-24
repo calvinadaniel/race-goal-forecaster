@@ -12,6 +12,10 @@
   --border: rgba(28, 42, 34, 0.12);
   --danger: #8b3a2f;
   --warn: #b7791f;
+  /* Defined on :root after next/font vars are on <html> (same element) */
+  --type-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --type-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --type-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
 @theme inline {
@@ -21,9 +25,9 @@
   --color-muted: var(--text-muted);
   --color-accent: var(--accent);
   --color-pine: var(--pine);
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
-  --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-family-display: var(--type-display);
 }
 
 * {
@@ -36,7 +40,7 @@ body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-sans);
+  font-family: var(--type-sans);
 }
 
 a {
@@ -57,7 +61,7 @@ a {
   border-radius: 0.35rem;
   border: 1px solid transparent;
   padding: 0.7rem 1.15rem;
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -93,7 +97,7 @@ a {
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
   font-size: 0.7rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -101,14 +105,15 @@ a {
 }
 
 .display {
-  font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: var(--type-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
   line-height: 1.05;
+  font-optical-sizing: auto;
 }
 
 .mono {
-  font-family: var(--font-mono);
+  font-family: var(--type-mono);
 }
 
 .muted {
@@ -153,4 +158,271 @@ label {
   .form-grid.two {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* —— Landing: Runna clarity (Direction 3) —— */
+.landing {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.landing__wrap {
+  width: min(1100px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.landing__btn {
+  border-radius: 0.75rem;
+  font-family: var(--type-sans);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  padding: 0.8rem 1.2rem;
+}
+
+.landing__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 0;
+}
+
+.landing__logo {
+  font-family: var(--type-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-size: 1.15rem;
+}
+
+.landing__logo span {
+  color: var(--accent);
+}
+
+.landing__hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding: 2rem 0 3rem;
+  align-items: center;
+}
+
+.landing__kicker {
+  display: inline-flex;
+  align-items: center;
+  background: var(--pine-soft);
+  color: var(--pine);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  margin: 0 0 1rem;
+}
+
+.landing__title {
+  font-size: clamp(2.6rem, 6vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  margin: 0 0 1rem;
+  max-width: 16ch;
+}
+
+.landing__lead {
+  color: var(--text-muted);
+  font-size: 1.08rem;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+  max-width: 30rem;
+}
+
+.landing__card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: 0 18px 40px rgba(28, 42, 34, 0.06);
+}
+
+.landing__week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.landing__day {
+  text-align: center;
+  padding: 0.55rem 0.2rem;
+  border-radius: 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(28, 42, 34, 0.04);
+}
+
+.landing__day--on {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.landing__day--accent {
+  background: var(--accent);
+  color: #fff;
+}
+
+.landing__v-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+}
+
+.landing__v-status {
+  font-size: clamp(2.2rem, 5vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--pine);
+  line-height: 1;
+  margin: 0.35rem 0;
+}
+
+.landing__v-time {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.landing__v-time span {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.landing__v-note {
+  margin: 0.85rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.landing__steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding-bottom: 3rem;
+}
+
+.landing__step {
+  background: #fffdf8;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+
+.landing__step-n {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.55rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.landing__step h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.4rem;
+  letter-spacing: -0.02em;
+}
+
+.landing__step p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.landing__footer {
+  border-top: 1px solid var(--border);
+  padding: 1.5rem 0 2.5rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (min-width: 800px) {
+  .landing__hero {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .landing__steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.kpi-row {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.kpi__value {
+  font-size: 1.5rem;
+  margin: 0.35rem 0 0.6rem;
+}
+
+.kpi__bar {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(28, 42, 34, 0.08);
+  overflow: hidden;
+}
+
+.kpi__bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.kpi__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+}
+
+.week-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  height: 7rem;
+}
+
+.week-bars__col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  height: 100%;
+}
+
+.week-bars__bar {
+  width: 100%;
+  max-width: 2rem;
+  background: var(--pine);
+  border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.week-bars__col span {
+  font-size: 0.65rem;
 }

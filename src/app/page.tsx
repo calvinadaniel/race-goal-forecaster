@@ -1,6 +1,11 @@
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
 
+async function stravaSignIn() {
+  "use server";
+  await signIn("strava", { redirectTo: "/onboarding" });
+}
+
 export default async function Home({
   searchParams,
 }: {
@@ -13,89 +18,84 @@ export default async function Home({
   }
 
   return (
-    <main>
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1.25rem 0",
-        }}
-        className="container"
-      >
-        <div className="display" style={{ fontSize: "1.35rem" }}>
-          Race Goal <span style={{ color: "var(--accent)" }}>Forecaster</span>
-        </div>
-        <form
-          action={async () => {
-            "use server";
-            await signIn("strava", { redirectTo: "/onboarding" });
-          }}
-        >
-          <button className="btn btn-primary" type="submit">
-            Continue with Strava
-          </button>
-        </form>
-      </header>
-
-      <section className="container" style={{ padding: "3rem 0 4rem" }}>
-        <p className="eyebrow">Trail-tested race forecasting</p>
-        <h1
-          className="display"
-          style={{ fontSize: "clamp(2.6rem, 8vw, 4.8rem)", maxWidth: "14ch", margin: "0.6rem 0 1rem" }}
-        >
-          Will you hit your race goal?
-        </h1>
-        <p className="muted" style={{ maxWidth: "38rem", fontSize: "1.1rem", lineHeight: 1.65 }}>
-          Connect Strava, set a finish time and race date, choose how hard you&apos;re willing
-          to train, and get a clear on-track verdict — plus what happens if you push harder.
-        </p>
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1.75rem" }}>
-          <form
-            action={async () => {
-              "use server";
-              await signIn("strava", { redirectTo: "/onboarding" });
-            }}
-          >
-            <button className="btn btn-primary" type="submit">
+    <main className="landing">
+      <div className="landing__wrap">
+        <header className="landing__header">
+          <div className="landing__logo">
+            Race Goal <span>Forecaster</span>
+          </div>
+          <form action={stravaSignIn}>
+            <button className="btn btn-primary landing__btn" type="submit">
               Continue with Strava
             </button>
           </form>
-        </div>
-      </section>
+        </header>
 
-      <section className="container" style={{ display: "grid", gap: "1rem", paddingBottom: "3rem" }}>
-        {[
-          {
-            title: "Goal + date",
-            body: "Pick 5K, 10K, half, or marathon. Enter your target finish time and race day.",
-          },
-          {
-            title: "Training posture",
-            body: "Conservative, Balanced, or Aggressive — how hard you’ll train in the block.",
-          },
-          {
-            title: "Honest forecast",
-            body: "We use your best recent efforts and weekly volume, not junk-mile averages.",
-          },
-        ].map((item) => (
-          <article key={item.title} className="card">
-            <h2 className="display" style={{ fontSize: "1.6rem", margin: "0 0 0.4rem" }}>
-              {item.title}
-            </h2>
-            <p className="muted" style={{ margin: 0, lineHeight: 1.6 }}>
-              {item.body}
+        <section className="landing__hero">
+          <div>
+            <p className="landing__kicker">Personalized race forecast</p>
+            <h1 className="landing__title display">
+              Your plan starts with an honest finish time.
+            </h1>
+            <p className="landing__lead">
+              Goal-first coaching flow — set the race, set the intensity, see a
+              clear verdict before you commit to the block.
             </p>
-          </article>
-        ))}
-      </section>
+            <form action={stravaSignIn}>
+              <button className="btn btn-primary landing__btn" type="submit">
+                Continue with Strava
+              </button>
+            </form>
+          </div>
 
-      <footer className="container" style={{ padding: "2rem 0 3rem", borderTop: "1px solid var(--border)" }}>
-        <p className="mono muted" style={{ fontSize: "0.75rem", lineHeight: 1.7, maxWidth: "40rem" }}>
-          Disclaimer: Race Goal Forecaster provides estimates only. It is not coaching, medical,
-          or training advice. Always progress training safely and consult a professional when needed.
-        </p>
-      </footer>
+          <aside className="landing__card" aria-label="Forecast preview">
+            <div className="landing__week" aria-hidden="true">
+              <div className="landing__day">M</div>
+              <div className="landing__day landing__day--on">T</div>
+              <div className="landing__day">W</div>
+              <div className="landing__day landing__day--accent">T</div>
+              <div className="landing__day">F</div>
+              <div className="landing__day landing__day--on">S</div>
+              <div className="landing__day">S</div>
+            </div>
+            <p className="landing__v-label">Today&apos;s forecast</p>
+            <p className="landing__v-status display">On track</p>
+            <p className="landing__v-time display">
+              1:42:18 <span>goal 1:45:00</span>
+            </p>
+            <p className="landing__v-note">
+              Balanced posture · Half · Oct 18. Built from your best recent
+              efforts + weekly volume.
+            </p>
+          </aside>
+        </section>
+
+        <section className="landing__steps" id="how">
+          <article className="landing__step">
+            <div className="landing__step-n">1</div>
+            <h2 className="display">Connect Strava</h2>
+            <p>We sync your runs and pull quality efforts near race distances.</p>
+          </article>
+          <article className="landing__step">
+            <div className="landing__step-n">2</div>
+            <h2 className="display">Set the race</h2>
+            <p>Distance, target time, race date, and how hard you&apos;ll train.</p>
+          </article>
+          <article className="landing__step">
+            <div className="landing__step-n">3</div>
+            <h2 className="display">Get the verdict</h2>
+            <p>On track / At risk / Unlikely — plus what-if intensity scenarios.</p>
+          </article>
+        </section>
+
+        <footer className="landing__footer">
+          <p>
+            Disclaimer: Race Goal Forecaster provides estimates only. It is not
+            coaching, medical, or training advice. Always progress training
+            safely and consult a professional when needed.
+          </p>
+        </footer>
+      </div>
     </main>
   );
 }

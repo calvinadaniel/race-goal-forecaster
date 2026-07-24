@@ -21,6 +21,13 @@ type ForecastPayload = {
     currentEquivalentSec: number;
     confidence: string;
     why: string[];
+    tips: string[];
+    kpis: {
+      gapSec: number;
+      gapPct: number;
+      fitnessRatio: number;
+      volumeScore: number;
+    };
     needsBaseline: boolean;
     missing: string[];
     scenarios: {
@@ -159,6 +166,67 @@ export default function AppPage() {
           {distLabel}. Confidence: {forecast.confidence}.
         </p>
 
+        {!forecast.needsBaseline && (
+          <div className="kpi-row" style={{ marginTop: "1.5rem" }}>
+            <article className="card kpi">
+              <p className="eyebrow">Gap to goal</p>
+              <p className="mono kpi__value">
+                {forecast.kpis.gapSec <= 0
+                  ? "Ahead"
+                  : `+${formatDuration(forecast.kpis.gapSec)}`}
+              </p>
+              <div
+                className="kpi__bar"
+                role="meter"
+                aria-valuenow={Math.round(Math.min(15, Math.max(0, forecast.kpis.gapPct * 100)))}
+                aria-valuemin={0}
+                aria-valuemax={15}
+                aria-label="Projected gap percent"
+              >
+                <span
+                  style={{
+                    width: `${Math.min(100, Math.max(4, Math.abs(forecast.kpis.gapPct) * 500))}%`,
+                    background: forecast.kpis.gapSec <= 0 ? "var(--pine)" : "var(--accent)",
+                  }}
+                />
+              </div>
+              <p className="muted kpi__hint">
+                {(forecast.kpis.gapPct * 100).toFixed(1)}% vs target time
+              </p>
+            </article>
+            <article className="card kpi">
+              <p className="eyebrow">Fitness vs goal</p>
+              <p className="mono kpi__value">
+                {(forecast.kpis.fitnessRatio * 100).toFixed(0)}%
+              </p>
+              <div className="kpi__bar" role="meter" aria-label="Current fitness vs goal">
+                <span
+                  style={{
+                    width: `${Math.min(100, (1 / Math.max(forecast.kpis.fitnessRatio, 0.5)) * 100)}%`,
+                    background: "var(--pine)",
+                  }}
+                />
+              </div>
+              <p className="muted kpi__hint">100% = current fitness matches goal</p>
+            </article>
+            <article className="card kpi">
+              <p className="eyebrow">Volume score</p>
+              <p className="mono kpi__value">
+                {(forecast.kpis.volumeScore * 100).toFixed(0)}%
+              </p>
+              <div className="kpi__bar" role="meter" aria-label="Volume score">
+                <span
+                  style={{
+                    width: `${Math.min(100, (forecast.kpis.volumeScore / 1.15) * 100)}%`,
+                    background: "var(--accent)",
+                  }}
+                />
+              </div>
+              <p className="muted kpi__hint">Mileage + consistency (cap ~115%)</p>
+            </article>
+          </div>
+        )}
+
         {forecast.needsBaseline && (
           <div className="card" style={{ marginTop: "1rem", borderColor: "var(--accent)" }}>
             <p style={{ margin: "0 0 0.5rem" }}>Need more history to forecast.</p>
@@ -176,6 +244,19 @@ export default function AppPage() {
 
       {!forecast.needsBaseline && (
         <>
+          <section className="container" style={{ display: "grid", gap: "1rem", paddingBottom: "2rem" }}>
+            <h2 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>
+              Plan to hit the goal
+            </h2>
+            <div className="card">
+              <ol style={{ margin: 0, paddingLeft: "1.2rem", lineHeight: 1.7 }}>
+                {forecast.tips.map((tip) => (
+                  <li key={tip}>{tip}</li>
+                ))}
+              </ol>
+            </div>
+          </section>
+
           <section className="container" style={{ display: "grid", gap: "1rem", paddingBottom: "2rem" }}>
             <h2 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>
               What if intensity changes?
@@ -228,6 +309,38 @@ export default function AppPage() {
                   <li key={line}>{line}</li>
                 ))}
               </ul>
+            </div>
+          </section>
+
+          <section className="container" style={{ display: "grid", gap: "1rem", paddingBottom: "2rem" }}>
+            <h2 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>
+              Weekly volume
+            </h2>
+            <div className="card">
+              <div className="week-bars" aria-label="Weekly mileage chart">
+                {strip.weeklyMiles.slice(-12).map((w) => {
+                  const max = Math.max(
+                    ...strip.weeklyMiles.slice(-12).map((x) => x.miles),
+                    1,
+                  );
+                  const label =
+                    units === "km"
+                      ? (w.miles * 1.60934).toFixed(0)
+                      : w.miles.toFixed(0);
+                  return (
+                    <div key={w.weekStart} className="week-bars__col" title={`${w.weekStart}: ${label}`}>
+                      <div
+                        className="week-bars__bar"
+                        style={{ height: `${Math.max(6, (w.miles / max) * 100)}%` }}
+                      />
+                      <span className="mono muted">{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="muted" style={{ margin: "0.75rem 0 0", fontSize: "0.85rem" }}>
+                Last {Math.min(12, strip.weeklyMiles.length)} weeks ({units === "km" ? "km" : "mi"})
+              </p>
             </div>
           </section>
 
