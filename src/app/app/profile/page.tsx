@@ -1,9 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Footprints,
+  Gauge,
+  Medal,
+  RefreshCw,
+  Timer,
+  Trophy,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { KpiCard, SectionHeading, SurfaceCard } from "@/components/ui-surface";
 import { formatDuration } from "@/lib/units";
 import { useForecastData } from "@/lib/use-forecast";
+import { cn } from "@/lib/utils";
 
 function formatPace(secPerMi: number | null): string {
   if (secPerMi == null || !Number.isFinite(secPerMi)) return "—";
@@ -20,7 +36,7 @@ export default function ProfilePage() {
     return (
       <AppShell>
         <main className="container app-page">
-          <p style={{ color: "var(--danger)" }}>{error}</p>
+          <p className="text-destructive">{error}</p>
         </main>
       </AppShell>
     );
@@ -29,8 +45,20 @@ export default function ProfilePage() {
   if (!data) {
     return (
       <AppShell>
-        <main className="container app-page">
-          <p className="muted">Loading profile…</p>
+        <main className="container app-page space-y-4">
+          <div className="flex items-center gap-4">
+            <Skeleton className="size-[72px] rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-8 w-40" />
+            </div>
+          </div>
+          <div className="profile-grid">
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+          </div>
         </main>
       </AppShell>
     );
@@ -46,8 +74,9 @@ export default function ProfilePage() {
   return (
     <AppShell
       headerAction={
-        <button
-          className="btn btn-ghost landing__btn"
+        <Button
+          variant="outline"
+          className="landing__btn h-10 rounded-xl font-bold"
           type="button"
           onClick={() => {
             setAvatarFailed(false);
@@ -55,88 +84,101 @@ export default function ProfilePage() {
           }}
           disabled={busy}
         >
+          <RefreshCw className={cn("size-4", busy && "animate-spin")} />
           {busy ? "Refreshing…" : "Refresh"}
-        </button>
+        </Button>
       }
     >
       <main className="container app-page">
         <div className="profile-hero">
-          {showPhoto ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={profile.image ?? "avatar"}
-              className="profile-hero__avatar"
-              src="/api/avatar"
-              alt=""
-              width={72}
-              height={72}
-              onError={() => setAvatarFailed(true)}
-            />
-          ) : (
-            <div className="profile-hero__avatar profile-hero__avatar--placeholder" aria-hidden="true">
+          <Avatar className="profile-hero__avatar size-[72px] border border-border shadow-sm">
+            {showPhoto ? (
+              <AvatarImage
+                key={profile.image ?? "avatar"}
+                src="/api/avatar"
+                alt=""
+                onError={() => setAvatarFailed(true)}
+              />
+            ) : null}
+            <AvatarFallback className="profile-hero__avatar--placeholder bg-[var(--surface)] text-[var(--pine)] text-2xl font-bold">
               {(profile.name ?? "R").slice(0, 1).toUpperCase()}
-            </div>
-          )}
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <p className="eyebrow" style={{ margin: 0 }}>
-              Profile
-            </p>
-            <h1
-              className="display"
-              style={{ fontSize: "clamp(1.8rem, 5vw, 2.6rem)", margin: "0.25rem 0" }}
-            >
+            <p className="eyebrow m-0">Profile</p>
+            <h1 className="display my-1 text-[clamp(1.8rem,5vw,2.6rem)]">
               {profile.name ?? "Runner"}
             </h1>
-            <p className="muted" style={{ margin: 0, lineHeight: 1.5 }}>
+            <p className="muted m-0 leading-relaxed">
               {profile.year} stats from synced Strava runs
             </p>
           </div>
         </div>
 
         <div className="profile-grid">
-          <article className="card">
-            <p className="eyebrow">YTD mileage</p>
-            <p className="mono" style={{ fontSize: "2rem", margin: "0.35rem 0 0" }}>
-              {ytdDisplay}
-            </p>
-          </article>
-          <article className="card">
-            <p className="eyebrow">Average pace</p>
-            <p className="mono" style={{ fontSize: "2rem", margin: "0.35rem 0 0" }}>
-              {formatPace(profile.avgPaceSecPerMi)}
-            </p>
-          </article>
-          <article className="card">
-            <p className="eyebrow">Races completed</p>
-            <p className="mono" style={{ fontSize: "2rem", margin: "0.35rem 0 0" }}>
-              {profile.racesCompleted}
-            </p>
-            <p className="muted" style={{ margin: "0.35rem 0 0", fontSize: "0.85rem" }}>
-              Marked as race in Strava (not “wins” — we don’t have place data)
-            </p>
-          </article>
-          <article className="card">
-            <p className="eyebrow">Activities</p>
-            <p className="mono" style={{ fontSize: "2rem", margin: "0.35rem 0 0" }}>
-              {profile.activityCount}
-            </p>
-          </article>
+          <KpiCard label="YTD mileage" value={ytdDisplay}>
+            <div className="flex items-center gap-2 text-[var(--pine)]">
+              <Footprints className="size-4" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Distance</span>
+            </div>
+          </KpiCard>
+          <KpiCard label="Average pace" value={formatPace(profile.avgPaceSecPerMi)}>
+            <div className="flex items-center gap-2 text-primary">
+              <Timer className="size-4" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Pace</span>
+            </div>
+          </KpiCard>
+          <SurfaceCard className="gap-2 py-4">
+            <CardHeader className="px-4 pb-0">
+              <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em] text-[var(--accent)]">
+                Races completed
+              </CardDescription>
+              <CardTitle className="mono text-3xl font-medium">
+                {profile.racesCompleted}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 px-4 pt-0">
+              <div className="flex items-center gap-2 text-primary">
+                <Medal className="size-4" />
+                <span className="text-xs font-semibold uppercase tracking-wide">Strava races</span>
+              </div>
+              <p className="muted m-0 text-sm">
+                Marked as race in Strava (not “wins” — we don’t have place data)
+              </p>
+            </CardContent>
+          </SurfaceCard>
+          <KpiCard label="Activities" value={String(profile.activityCount)}>
+            <div className="flex items-center gap-2 text-[var(--pine)]">
+              <Gauge className="size-4" />
+              <span className="text-xs font-semibold uppercase tracking-wide">YTD runs</span>
+            </div>
+          </KpiCard>
         </div>
 
         {data.strip.topEfforts.length > 0 && (
           <section className="app-section">
-            <h2 className="display section-title">Recent activities</h2>
-            <div className="card">
-              <ul style={{ margin: 0, paddingLeft: "1rem", lineHeight: 1.7 }}>
-                {data.strip.topEfforts.map((e) => (
-                  <li key={e.id}>
-                    <span className="mono">{e.date}</span> · {e.name || "Run"} ·{" "}
-                    {formatDuration(e.movingTimeSec)}
-                    {e.isRace ? " · race" : ""}
-                  </li>
+            <SectionHeading icon={Trophy} title="Recent activities" />
+            <SurfaceCard interactive={false}>
+              <CardContent className="space-y-0 px-0 py-0">
+                {data.strip.topEfforts.map((e, i) => (
+                  <div key={e.id}>
+                    {i > 0 ? <Separator /> : null}
+                    <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-muted/60">
+                      <div>
+                        <p className="m-0 font-semibold">{e.name || "Run"}</p>
+                        <p className="mono muted m-0 text-sm">{e.date}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="mono text-sm">
+                          {formatDuration(e.movingTimeSec)}
+                        </span>
+                        {e.isRace ? <Badge className="rounded-full">Race</Badge> : null}
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </ul>
-            </div>
+              </CardContent>
+            </SurfaceCard>
           </section>
         )}
       </main>

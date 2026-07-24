@@ -121,18 +121,28 @@ function runsPerWeekFor(intensity: Intensity): number {
 }
 
 function weekMilesForPhase(
-  phase: Phase,
   weekIndex: number,
   totalWeeks: number,
   startMiles: number,
   peakMiles: number,
 ): number {
-  if (phase === "Taper") return Math.max(8, Math.round(peakMiles * 0.62));
-  if (totalWeeks <= 1) return peakMiles;
-  const ramp = Math.min(1, weekIndex / Math.max(1, totalWeeks - 2));
-  const target = startMiles + (peakMiles - startMiles) * ramp;
-  if (phase === "Peak") return Math.round(Math.max(target, peakMiles * 0.95));
-  return Math.round(target);
+  if (totalWeeks <= 1) return Math.round((startMiles + peakMiles) / 2);
+
+  // Last ~15% of plan (min 1, max 3 weeks) tapers down toward race
+  const taperWeeks = Math.min(3, Math.max(1, Math.round(totalWeeks * 0.15)));
+  const buildWeeks = Math.max(1, totalWeeks - taperWeeks);
+
+  if (weekIndex >= buildWeeks) {
+    const step = weekIndex - buildWeeks;
+    const factors = [0.72, 0.55, 0.4];
+    return Math.max(8, Math.round(peakMiles * (factors[step] ?? 0.4)));
+  }
+
+  const progress = buildWeeks === 1 ? 1 : weekIndex / (buildWeeks - 1);
+  const ramped = startMiles + (peakMiles - startMiles) * progress;
+  // Deload every 4th build week so the plan isn't a flat climb
+  const deload = weekIndex > 0 && (weekIndex + 1) % 4 === 0 && weekIndex < buildWeeks - 1;
+  return Math.round(deload ? ramped * 0.8 : ramped);
 }
 
 function buildWeekTemplate(args: {
@@ -143,10 +153,23 @@ function buildWeekTemplate(args: {
   distanceKey: DistanceKey;
   weekStart: Date;
   raceDate: Date;
+  weekIndex: number;
+  totalWeeks: number;
 }): PlanDay[] {
-  const { phase, weeklyMiles, intensity, pace, distanceKey, weekStart, raceDate } = args;
+  const {
+    phase,
+    weeklyMiles,
+    intensity,
+    pace,
+    distanceKey,
+    weekStart,
+    raceDate,
+    weekIndex,
+    totalWeeks,
+  } = args;
   const raceIso = iso(raceDate);
   const runsPerWeek = runsPerWeekFor(intensity);
+  const progress = totalWeeks <= 1 ? 1 : weekIndex / Math.max(1, totalWeeks - 1);
 
   const longShare =
     distanceKey === "marathon" ? 0.3 : distanceKey === "half" ? 0.28 : 0.25;
@@ -156,26 +179,45 @@ function buildWeekTemplate(args: {
       ? Math.max(3, Math.round(weeklyMiles * 0.15))
       : Math.max(4, Math.round(weeklyMiles * 0.2));
 
+  // Workout structure advances with plan progress, not only phase label
+  const intervalReps =
+    phase === "Taper"
+      ? 2 + Math.round(progress)
+      : phase === "Base"
+        ? 3
+        : phase === "Build"
+          ? 4 + Math.round(progress * 2)
+          : 5 + Math.round(progress * 2);
+
   const qualityTitle =
     phase === "Taper"
       ? "Short race-pace touch"
       : phase === "Base"
-        ? "Steady tempo"
-        : "Goal-pace intervals";
+        ? progress < 0.35
+          ? "Easy tempo"
+          : "Steady tempo"
+        : phase === "Build"
+          ? progress < 0.5
+            ? "Cruise intervals"
+            : "Goal-pace intervals"
+          : "Race-pace sharpeners";
 
   const qualityDetail =
     phase === "Taper"
-      ? `20–30 min easy + 2–3 × 3 min @ ~${pace}, full recoveries.`
+      ? `20–30 min easy + ${intervalReps} × 3 min @ ~${pace}, full recoveries.`
       : phase === "Base"
         ? `${qualityMi} mi continuous @ comfortably hard (slower than ${pace}).`
         : distanceKey === "marathon" || distanceKey === "half"
-          ? `${qualityMi} mi with 3–5 × 1 mi @ ~${pace}, jog recoveries.`
-          : `${qualityMi} mi with 6–10 × 400–800m @ faster than ${pace}, jog recoveries.`;
+          ? `${qualityMi} mi with ${intervalReps} × 1 mi @ ~${pace}, jog recoveries.`
+          : `${qualityMi} mi with ${intervalReps + 2} × 400–800m @ faster than ${pace}, jog recoveries.`;
 
+  const finishMiles = Math.min(3, Math.max(1, Math.round(longMi * (0.12 + progress * 0.12))));
   const longDetail =
     phase === "Taper"
       ? `${Math.max(4, Math.round(longMi * 0.6))} mi easy — keep it conversational.`
-      : `${longMi} mi easy; last ${Math.min(3, Math.round(longMi * 0.2))} mi near ${pace} if feeling good.`;
+      : phase === "Base"
+        ? `${longMi} mi easy throughout.`
+        : `${longMi} mi easy; last ${finishMiles} mi near ${pace} if feeling good.`;
 
   const easyFill = Math.max(
     3,
@@ -274,12 +316,19 @@ export function buildTrainingPlan(args: {
     args.intensity,
     args.verdict,
   );
-  const startMiles = Math.max(
-    VOLUME_FLOOR[args.distanceKey] * 0.85,
-    Math.round(args.recentWeeklyMiles || peak * 0.75),
+  // Always leave headroom so volume climbs toward peak (even if already trained)
+  const fromHistory = Math.round(args.recentWeeklyMiles || peak * 0.7);
+  const startMiles = Math.min(
+    Math.round(peak * 0.82),
+    Math.max(Math.round(VOLUME_FLOOR[args.distanceKey] * 0.75), fromHistory),
   );
   const pace = pacePerMile(args.targetTimeSec, args.distanceM);
   const runsPerWeek = runsPerWeekFor(args.intensity);
+
+  const totalWeeks = Math.max(
+    1,
+    Math.round((lastMonday.getTime() - firstMonday.getTime()) / (7 * 86400000)) + 1,
+  );
 
   const weeks: PlanWeek[] = [];
   let cursor = firstMonday;
@@ -288,16 +337,7 @@ export function buildTrainingPlan(args: {
   while (cursor <= lastMonday && weekIndex < 52) {
     const monthsLeft = monthsBetween(cursor, end);
     const phase = phaseForMonths(monthsLeft);
-    const weeklyMiles = weekMilesForPhase(
-      phase,
-      weekIndex,
-      Math.max(
-        1,
-        Math.round((lastMonday.getTime() - firstMonday.getTime()) / (7 * 86400000)) + 1,
-      ),
-      startMiles,
-      peak,
-    );
+    const weeklyMiles = weekMilesForPhase(weekIndex, totalWeeks, startMiles, peak);
     const days = buildWeekTemplate({
       phase,
       weeklyMiles,
@@ -306,6 +346,8 @@ export function buildTrainingPlan(args: {
       distanceKey: args.distanceKey,
       weekStart: cursor,
       raceDate: end,
+      weekIndex,
+      totalWeeks,
     });
 
     weeks.push({
@@ -330,6 +372,8 @@ export function buildTrainingPlan(args: {
       distanceKey: args.distanceKey,
       weekStart: firstMonday,
       raceDate: end,
+      weekIndex: 0,
+      totalWeeks: 1,
     });
     weeks.push({
       weekIndex: 1,
@@ -344,7 +388,7 @@ export function buildTrainingPlan(args: {
   const dist = DISTANCES[args.distanceKey].label;
   const notes = [
     `Plan runs ${iso(asOf)} → ${iso(end)} (${weeks.length} week${weeks.length === 1 ? "" : "s"}) for a ${dist}.`,
-    `Peak ~${peak} mi/week under ${POSTURE_LABELS[args.intensity].toLowerCase()} load. Goal pace ≈ ${pace}.`,
+    `Volume builds ~${startMiles} → peak ~${peak} mi/week, with deload every 4th week, then taper. Goal pace ≈ ${pace}.`,
     "Cut volume 20–30% if sore, sick, or sleep-deprived. Template only — not personalized coaching.",
   ];
 
@@ -361,3 +405,4 @@ export function buildTrainingPlan(args: {
     notes,
   };
 }
+

@@ -2,42 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Activity, Flag, Target, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const TABS = [
   {
     href: "/app/training",
     label: "Training",
     match: (p: string) => p.startsWith("/app/training"),
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 19h16M7 16l3-8 3 5 2-3 2 6" />
-        <circle cx="7" cy="16" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="17" cy="16" r="1.2" fill="currentColor" stroke="none" />
-      </svg>
-    ),
+    icon: Activity,
   },
   {
     href: "/app/forecast",
     label: "Forecast",
     match: (p: string) => p.startsWith("/app/forecast"),
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="8" />
-        <path d="M12 8v4l3 2" />
-      </svg>
-    ),
+    icon: Target,
   },
   {
     href: "/app/profile",
     label: "Profile",
     match: (p: string) => p.startsWith("/app/profile"),
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="8" r="3.2" />
-        <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
-      </svg>
-    ),
+    icon: UserRound,
   },
 ] as const;
 
@@ -61,9 +48,12 @@ export function AppShell({
         <div className="app-shell__actions">
           {headerAction}
           {showEditGoal && (
-            <Link className="btn btn-primary landing__btn" href="/app/goal">
-              Edit goal
-            </Link>
+            <Button asChild className="landing__btn h-10 rounded-xl px-4 font-bold">
+              <Link href="/app/goal">
+                <Flag className="size-4" />
+                Edit goal
+              </Link>
+            </Button>
           )}
         </div>
       </header>
@@ -73,14 +63,15 @@ export function AppShell({
       <nav className="app-tabbar" aria-label="Primary">
         {TABS.map((tab) => {
           const active = tab.match(pathname);
+          const Icon = tab.icon;
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`app-tab${active ? " app-tab--active" : ""}`}
+              className={cn("app-tab", active && "app-tab--active")}
               aria-current={active ? "page" : undefined}
             >
-              {tab.icon}
+              <Icon className="size-5" strokeWidth={active ? 2.4 : 1.9} />
               {tab.label}
             </Link>
           );

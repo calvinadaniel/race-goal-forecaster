@@ -1,8 +1,54 @@
 "use client";
 
+import {
+  CalendarRange,
+  Download,
+  Flag,
+  Moon,
+  Mountain,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SectionHeading, SurfaceCard } from "@/components/ui-surface";
 import { downloadTrainingPlanCsv } from "@/lib/export-training-plan";
 import { useForecastData } from "@/lib/use-forecast";
+import { cn } from "@/lib/utils";
+
+const FOCUS_META: Record<
+  string,
+  { label: string; icon: typeof Zap; className: string }
+> = {
+  easy: {
+    label: "Easy",
+    icon: Sparkles,
+    className: "bg-secondary text-secondary-foreground",
+  },
+  quality: {
+    label: "Quality",
+    icon: Zap,
+    className: "bg-primary text-primary-foreground",
+  },
+  long: {
+    label: "Long",
+    icon: Mountain,
+    className: "bg-[var(--pine)] text-[#fff7ef]",
+  },
+  rest: {
+    label: "Rest",
+    icon: Moon,
+    className: "bg-muted text-muted-foreground",
+  },
+  race: {
+    label: "Race",
+    icon: Flag,
+    className: "bg-primary text-primary-foreground",
+  },
+};
 
 export default function TrainingPage() {
   const { data, error } = useForecastData();
@@ -11,7 +57,7 @@ export default function TrainingPage() {
     return (
       <AppShell>
         <main className="container app-page">
-          <p style={{ color: "var(--danger)" }}>{error}</p>
+          <p className="text-destructive">{error}</p>
         </main>
       </AppShell>
     );
@@ -20,8 +66,10 @@ export default function TrainingPage() {
   if (!data) {
     return (
       <AppShell>
-        <main className="container app-page">
-          <p className="muted">Loading plan…</p>
+        <main className="container app-page space-y-4">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-12 w-80" />
+          <Skeleton className="h-40 rounded-xl" />
         </main>
       </AppShell>
     );
@@ -30,97 +78,117 @@ export default function TrainingPage() {
   const plan = data.forecast.trainingPlan;
   const weeks = plan?.weeks ?? [];
 
+  const exportCsv = () => {
+    if (!plan || weeks.length === 0) return;
+    downloadTrainingPlanCsv(
+      weeks,
+      `training-plan-${plan.startDate ?? "export"}-to-${plan.endDate ?? "race"}.csv`,
+    );
+  };
+
   return (
     <AppShell
       headerAction={
         plan && !data.forecast.needsBaseline && weeks.length > 0 ? (
-          <button
-            className="btn btn-ghost landing__btn"
+          <Button
+            variant="outline"
+            className="landing__btn h-10 rounded-xl font-bold"
             type="button"
-            onClick={() =>
-              downloadTrainingPlanCsv(
-                weeks,
-                `training-plan-${plan.startDate ?? "export"}-to-${plan.endDate ?? "race"}.csv`,
-              )
-            }
+            onClick={exportCsv}
           >
+            <Download className="size-4" />
             Export CSV
-          </button>
+          </Button>
         ) : undefined
       }
     >
       <main className="container app-page">
         <p className="eyebrow">Training</p>
-        <h1 className="display" style={{ fontSize: "clamp(2rem, 6vw, 3rem)", margin: "0.35rem 0 0.75rem" }}>
+        <h1 className="display mt-1 mb-3 text-[clamp(2rem,6vw,3rem)]">
           Full plan to race day
         </h1>
 
         {!plan || data.forecast.needsBaseline ? (
-          <div className="card">
-            <p style={{ margin: 0 }}>
-              Set a goal with enough history to unlock a training plan through race day.
-            </p>
-          </div>
+          <SurfaceCard>
+            <CardContent>
+              <p className="m-0">
+                Set a goal with enough history to unlock a training plan through race day.
+              </p>
+            </CardContent>
+          </SurfaceCard>
         ) : (
           <>
             <div className="plan-toolbar">
-              <p className="muted" style={{ margin: 0, maxWidth: "40rem", lineHeight: 1.55 }}>
+              <p className="muted m-0 max-w-xl leading-relaxed">
                 {plan.startDate} → {plan.endDate} · {weeks.length} week
                 {weeks.length === 1 ? "" : "s"} · goal pace {plan.goalPacePerMi} ·{" "}
                 {plan.runsPerWeek} runs/week pattern
               </p>
-              <button
-                className="btn btn-primary"
+              <Button
+                className="landing__btn h-10 rounded-xl font-bold"
                 type="button"
-                onClick={() =>
-                  downloadTrainingPlanCsv(
-                    weeks,
-                    `training-plan-${plan.startDate ?? "export"}-to-${plan.endDate ?? "race"}.csv`,
-                  )
-                }
+                onClick={exportCsv}
               >
+                <Download className="size-4" />
                 Export training plan
-              </button>
+              </Button>
             </div>
 
             <div className="plan-full">
               {weeks.map((week) => (
                 <section key={week.weekStart} className="plan-full__week">
                   <header className="plan-full__head">
-                    <h2 className="display" style={{ fontSize: "1.35rem", margin: 0 }}>
-                      Week {week.weekIndex}
-                    </h2>
-                    <p className="muted" style={{ margin: 0, fontSize: "0.9rem" }}>
-                      {week.phase} · starts {week.weekStart} · ~{week.weeklyMiles} mi
-                    </p>
+                    <SectionHeading
+                      icon={CalendarRange}
+                      title={`Week ${week.weekIndex}`}
+                      tone="pine"
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="rounded-full">
+                        {week.phase}
+                      </Badge>
+                      <Badge variant="outline" className="rounded-full">
+                        starts {week.weekStart}
+                      </Badge>
+                      <Badge variant="outline" className="rounded-full">
+                        ~{week.weeklyMiles} mi
+                      </Badge>
+                    </div>
                   </header>
                   <div className="plan-week">
-                    {week.days.map((d) => (
-                      <article
-                        key={`${week.weekStart}-${d.day}-${d.date ?? ""}`}
-                        className={`card plan-day plan-day--${d.focus}`}
-                      >
-                        <p className="eyebrow" style={{ margin: 0 }}>
-                          {d.day}
-                          {d.date ? ` · ${d.date.slice(5)}` : ""}
-                        </p>
-                        <p className="display" style={{ fontSize: "1.1rem", margin: "0.35rem 0" }}>
-                          {d.title}
-                        </p>
-                        <p className="muted" style={{ margin: 0, fontSize: "0.85rem", lineHeight: 1.45 }}>
-                          {d.detail}
-                        </p>
-                      </article>
-                    ))}
+                    {week.days.map((d) => {
+                      const focus = FOCUS_META[d.focus] ?? FOCUS_META.easy;
+                      const FocusIcon = focus.icon;
+                      return (
+                        <SurfaceCard
+                          key={`${week.weekStart}-${d.day}-${d.date ?? ""}`}
+                          className={cn("plan-day gap-2 py-3", `plan-day--${d.focus}`)}
+                        >
+                          <CardHeader className="gap-2 px-4 pb-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="eyebrow m-0">
+                                {d.day}
+                                {d.date ? ` · ${d.date.slice(5)}` : ""}
+                              </p>
+                              <Badge className={cn("rounded-full gap-1", focus.className)}>
+                                <FocusIcon className="size-3" />
+                                {focus.label}
+                              </Badge>
+                            </div>
+                            <CardTitle className="display text-lg">{d.title}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="px-4 pt-0">
+                            <p className="muted m-0 text-sm leading-snug">{d.detail}</p>
+                          </CardContent>
+                        </SurfaceCard>
+                      );
+                    })}
                   </div>
                 </section>
               ))}
             </div>
 
-            <ul
-              className="muted"
-              style={{ margin: "1.25rem 0 0", paddingLeft: "1.1rem", lineHeight: 1.6, fontSize: "0.9rem" }}
-            >
+            <ul className="muted mt-5 list-disc space-y-1 pl-5 text-sm leading-relaxed">
               {plan.notes.map((n) => (
                 <li key={n}>{n}</li>
               ))}

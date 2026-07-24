@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, IBM_Plex_Mono, Manrope } from "next/font/google";
+import { Providers } from "@/components/Providers";
+import { cn } from "@/lib/utils";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -32,9 +34,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${bricolage.variable} ${manrope.variable} ${plexMono.variable}`}
+      className={cn(bricolage.variable, manrope.variable, plexMono.variable, "font-sans")}
     >
-      <body className={manrope.className}>{children}</body>
+      <body className={manrope.className}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

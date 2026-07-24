@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
   --bg: #f7f3eb;
@@ -16,6 +20,38 @@
   --type-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --type-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --type-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* shadcn tokens mapped to Trail Pine + Terracotta */
+  --background: #f7f3eb;
+  --foreground: #1c2a22;
+  --card: #fffdf8;
+  --card-foreground: #1c2a22;
+  --popover: #fffdf8;
+  --popover-foreground: #1c2a22;
+  --primary: #c45c26;
+  --primary-foreground: #fff7ef;
+  --secondary: rgba(63, 107, 79, 0.14);
+  --secondary-foreground: #1c2a22;
+  --muted: #efe8dc;
+  --muted-foreground: rgba(28, 42, 34, 0.65);
+  --accent-foreground: #fff7ef;
+  --destructive: #8b3a2f;
+  --input: rgba(28, 42, 34, 0.16);
+  --ring: rgba(196, 92, 38, 0.45);
+  --chart-1: #3f6b4f;
+  --chart-2: #c45c26;
+  --chart-3: #b7791f;
+  --chart-4: #1c2a22;
+  --chart-5: #8b3a2f;
+  --radius: 0.85rem;
+  --sidebar: #fffdf8;
+  --sidebar-foreground: #1c2a22;
+  --sidebar-primary: #c45c26;
+  --sidebar-primary-foreground: #fff7ef;
+  --sidebar-accent: #efe8dc;
+  --sidebar-accent-foreground: #1c2a22;
+  --sidebar-border: rgba(28, 42, 34, 0.12);
+  --sidebar-ring: rgba(196, 92, 38, 0.45);
 }
 
 @theme inline {
@@ -25,9 +61,46 @@
   --color-muted: var(--text-muted);
   --color-accent: var(--accent);
   --color-pine: var(--pine);
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-heading: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
   --font-family-display: var(--type-display);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 * {
@@ -580,6 +653,26 @@ label {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+.forecast-split {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+.forecast-split__col {
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+  min-width: 0;
+}
+
+@media (min-width: 860px) {
+  .forecast-split {
+    grid-template-columns: 1.1fr 1fr;
+    align-items: stretch;
+  }
+}
+
 .profile-grid {
   display: grid;
   gap: 0.75rem;
@@ -624,4 +717,134 @@ label {
 
 .app-tab--active svg {
   stroke-width: 2.2;
+}
+
+
+/* —— Interactive UI polish (shadcn surfaces) —— */
+.ui-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  box-shadow: 0 8px 22px rgba(28, 42, 34, 0.05);
+}
+
+.ui-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(28, 42, 34, 0.1);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.ui-lift:active {
+  transform: translateY(0);
+}
+
+.ui-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.ui-section-icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.ui-section-icon--pine {
+  background: var(--pine-soft);
+  color: var(--pine);
+}
+
+.week-bars__bar {
+  transition: height 0.35s ease, filter 0.2s ease, transform 0.2s ease;
+}
+
+.week-bars__col:hover .week-bars__bar {
+  filter: brightness(1.08);
+  transform: scaleX(1.08);
+}
+
+.plan-day {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.plan-day:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(28, 42, 34, 0.08);
+}
+
+.app-tab {
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.app-tab:hover {
+  color: var(--text);
+  background: rgba(28, 42, 34, 0.04);
+}
+
+.app-tab--active {
+  background: var(--accent-soft);
+}
+
+.app-tab:active {
+  transform: scale(0.97);
+}
+
+.dark {
+  --bg: #152019;
+  --surface: #1c2a22;
+  --text: #f7f3eb;
+  --text-muted: rgba(247, 243, 235, 0.65);
+  --accent: #e07a45;
+  --accent-soft: rgba(224, 122, 69, 0.18);
+  --pine: #7aa888;
+  --pine-soft: rgba(122, 168, 136, 0.18);
+  --border: rgba(247, 243, 235, 0.14);
+  --background: #152019;
+  --foreground: #f7f3eb;
+  --card: #1c2a22;
+  --card-foreground: #f7f3eb;
+  --popover: #1c2a22;
+  --popover-foreground: #f7f3eb;
+  --primary: #e07a45;
+  --primary-foreground: #1c2a22;
+  --secondary: rgba(122, 168, 136, 0.2);
+  --secondary-foreground: #f7f3eb;
+  --muted: #24332a;
+  --muted-foreground: rgba(247, 243, 235, 0.65);
+  --accent-foreground: #1c2a22;
+  --destructive: #e08a7a;
+  --input: rgba(247, 243, 235, 0.18);
+  --ring: rgba(224, 122, 69, 0.5);
+  --chart-1: #7aa888;
+  --chart-2: #e07a45;
+  --chart-3: #d4a24c;
+  --chart-4: #f7f3eb;
+  --chart-5: #e08a7a;
+  --sidebar: #1c2a22;
+  --sidebar-foreground: #f7f3eb;
+  --sidebar-primary: #e07a45;
+  --sidebar-primary-foreground: #1c2a22;
+  --sidebar-accent: #24332a;
+  --sidebar-accent-foreground: #f7f3eb;
+  --sidebar-border: rgba(247, 243, 235, 0.14);
+  --sidebar-ring: rgba(224, 122, 69, 0.5);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    background: var(--bg);
+    color: var(--text);
+  }
+  html {
+    @apply font-sans;
+  }
 }

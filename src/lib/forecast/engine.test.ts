@@ -97,4 +97,41 @@ describe("computeForecast", () => {
     expect(result.trainingPlan?.weeks.length).toBeGreaterThan(0);
     expect(result.trainingPlan?.weeklyMiles).toBeGreaterThan(0);
   });
+
+  it("builds volume toward race then tapers (not a flat repeat)", () => {
+    const asOf = new Date("2026-01-05T12:00:00");
+    const raceDate = new Date("2026-07-05T12:00:00");
+    const weeks = Array.from({ length: 12 }, (_, i) => ({
+      weekStart: `2025-10-${String(i + 1).padStart(2, "0")}`,
+      miles: 22,
+    }));
+    const result = computeForecast({
+      goalDistanceKey: "half",
+      goalDistanceM: 21097.5,
+      targetTimeSec: 7200,
+      raceDate,
+      intensity: "balanced",
+      asOf,
+      efforts: [
+        {
+          id: "1",
+          name: "HM",
+          startDate: asOf,
+          distanceM: 21097.5,
+          movingTimeSec: 7500,
+          isRace: true,
+        },
+      ],
+      weeklyMiles: weeks,
+    });
+    const plan = result.trainingPlan!;
+    expect(plan.weeks.length).toBeGreaterThan(8);
+    const miles = plan.weeks.map((w) => w.weeklyMiles);
+    const unique = new Set(miles);
+    expect(unique.size).toBeGreaterThan(3);
+    const last = miles[miles.length - 1];
+    const mid = miles[Math.floor(miles.length / 2)];
+    expect(mid).toBeGreaterThan(miles[0]);
+    expect(last).toBeLessThan(mid);
+  });
 });
