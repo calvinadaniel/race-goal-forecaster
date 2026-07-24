@@ -77,6 +77,20 @@ export type StravaAthleteProfile = {
   profile_medium?: string;
 };
 
+/** Strava returns relative "avatar/athlete/…" when there is no custom photo. */
+export function normalizeAthleteImageUrl(
+  ...candidates: Array<string | null | undefined>
+): string | null {
+  for (const raw of candidates) {
+    if (typeof raw !== "string") continue;
+    const url = raw.trim();
+    if (!url) continue;
+    if (url.includes("avatar/athlete")) continue;
+    if (url.startsWith("https://") || url.startsWith("http://")) return url;
+  }
+  return null;
+}
+
 export async function fetchStravaAthlete(
   accessToken: string,
 ): Promise<StravaAthleteProfile> {
@@ -95,7 +109,7 @@ export function athleteDisplayName(athlete: StravaAthleteProfile): string | null
 }
 
 export function athleteImageUrl(athlete: StravaAthleteProfile): string | null {
-  return athlete.profile || athlete.profile_medium || null;
+  return normalizeAthleteImageUrl(athlete.profile, athlete.profile_medium);
 }
 
 export class StravaActivitySource implements ActivitySource {

@@ -1,6 +1,7 @@
 "use client";
 
 import { AppShell } from "@/components/AppShell";
+import { downloadTrainingPlanCsv } from "@/lib/export-training-plan";
 import { useForecastData } from "@/lib/use-forecast";
 
 export default function TrainingPage() {
@@ -30,7 +31,24 @@ export default function TrainingPage() {
   const weeks = plan?.weeks ?? [];
 
   return (
-    <AppShell>
+    <AppShell
+      headerAction={
+        plan && !data.forecast.needsBaseline && weeks.length > 0 ? (
+          <button
+            className="btn btn-ghost landing__btn"
+            type="button"
+            onClick={() =>
+              downloadTrainingPlanCsv(
+                weeks,
+                `training-plan-${plan.startDate ?? "export"}-to-${plan.endDate ?? "race"}.csv`,
+              )
+            }
+          >
+            Export CSV
+          </button>
+        ) : undefined
+      }
+    >
       <main className="container app-page">
         <p className="eyebrow">Training</p>
         <h1 className="display" style={{ fontSize: "clamp(2rem, 6vw, 3rem)", margin: "0.35rem 0 0.75rem" }}>
@@ -45,11 +63,25 @@ export default function TrainingPage() {
           </div>
         ) : (
           <>
-            <p className="muted" style={{ margin: "0 0 1.25rem", maxWidth: "40rem", lineHeight: 1.55 }}>
-              {plan.startDate} → {plan.endDate} · {weeks.length} week
-              {weeks.length === 1 ? "" : "s"} · goal pace {plan.goalPacePerMi} ·{" "}
-              {plan.runsPerWeek} runs/week pattern
-            </p>
+            <div className="plan-toolbar">
+              <p className="muted" style={{ margin: 0, maxWidth: "40rem", lineHeight: 1.55 }}>
+                {plan.startDate} → {plan.endDate} · {weeks.length} week
+                {weeks.length === 1 ? "" : "s"} · goal pace {plan.goalPacePerMi} ·{" "}
+                {plan.runsPerWeek} runs/week pattern
+              </p>
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={() =>
+                  downloadTrainingPlanCsv(
+                    weeks,
+                    `training-plan-${plan.startDate ?? "export"}-to-${plan.endDate ?? "race"}.csv`,
+                  )
+                }
+              >
+                Export training plan
+              </button>
+            </div>
 
             <div className="plan-full">
               {weeks.map((week) => (

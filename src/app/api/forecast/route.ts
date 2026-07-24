@@ -6,6 +6,8 @@ import { activities, goals, users } from "@/db/schema";
 import { computeForecast } from "@/lib/forecast/engine";
 import type { DistanceKey } from "@/lib/forecast/distances";
 import type { Intensity } from "@/lib/forecast/postures";
+import { normalizeAthleteImageUrl } from "@/lib/strava";
+import { refreshStravaProfile } from "@/lib/strava-profile";
 import { weeklyVolumeFromActivities } from "@/lib/units";
 
 export async function GET() {
@@ -86,6 +88,20 @@ export async function GET() {
     .where(eq(users.id, session.user.id))
     .limit(1);
 
+  let image = normalizeAthleteImageUrl(user?.image);
+  let name = user?.name ?? session.user.name ?? null;
+
+  // Backfill photo for accounts that signed in before we stored absolute URLs
+  if (!image) {
+    try {
+      const refreshed = await refreshStravaProfile(session.user.id);
+      image = refreshed.image;
+      if (refreshed.name) name = refreshed.name;
+    } catch {
+      // Keep placeholder if Strava profile fetch fails
+    }
+  }
+
   return NextResponse.json({
     goal: {
       distanceKey: goal.distanceKey,
@@ -102,8 +118,9 @@ export async function GET() {
     },
     profile: {
       year,
-      name: user?.name ?? session.user.name ?? null,
-      image: user?.image ?? session.user.image ?? null,
+      name,
+      image,
+      hasPhoto: Boolean(image),
       ytdMiles,
       avgPaceSecPerMi,
       racesCompleted: ytd.filter((r) => r.isRace).length,

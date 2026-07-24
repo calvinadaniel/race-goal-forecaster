@@ -3,6 +3,7 @@ import Strava from "next-auth/providers/strava";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { accounts, users } from "@/db/schema";
+import { normalizeAthleteImageUrl } from "@/lib/strava";
 
 declare module "next-auth" {
   interface Session {
@@ -13,6 +14,17 @@ declare module "next-auth" {
       image?: string | null;
     };
   }
+}
+
+function imageFromAuthProfile(
+  profile: Record<string, unknown> | undefined,
+): string | null {
+  return normalizeAthleteImageUrl(
+    typeof profile?.image === "string" ? profile.image : null,
+    typeof profile?.picture === "string" ? profile.picture : null,
+    typeof profile?.profile === "string" ? profile.profile : null,
+    typeof profile?.profile_medium === "string" ? profile.profile_medium : null,
+  );
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -55,30 +67,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           })
           .where(eq(accounts.providerAccountId, athleteId));
         const raw = profile as Record<string, unknown> | undefined;
-        const image =
-          (typeof raw?.image === "string" && raw.image) ||
-          (typeof raw?.picture === "string" && raw.picture) ||
-          (typeof raw?.profile === "string" && raw.profile) ||
-          (typeof raw?.profile_medium === "string" && raw.profile_medium) ||
-          null;
+        const image = imageFromAuthProfile(raw);
         const name = profile?.name ?? null;
-        if (image || name) {
-          await db
-            .update(users)
-            .set({
-              ...(image ? { image } : {}),
-              ...(name ? { name } : {}),
-            })
-            .where(eq(users.id, userId));
-        }
+        await db
+          .update(users)
+          .set({
+            image,
+            ...(name ? { name } : {}),
+          })
+          .where(eq(users.id, userId));
       } else {
         const raw = profile as Record<string, unknown> | undefined;
-        const image =
-          (typeof raw?.image === "string" && raw.image) ||
-          (typeof raw?.picture === "string" && raw.picture) ||
-          (typeof raw?.profile === "string" && raw.profile) ||
-          (typeof raw?.profile_medium === "string" && raw.profile_medium) ||
-          null;
+        const image = imageFromAuthProfile(raw);
         const [created] = await db
           .insert(users)
           .values({
@@ -131,7 +131,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .limit(1);
         if (user) {
           session.user.name = user.name;
-          session.user.image = user.image;
+          session.user.image = normalizeAthleteImageUrl(user.image);
         }
       }
       return session;

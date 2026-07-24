@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { formatDuration } from "@/lib/units";
 import { useForecastData } from "@/lib/use-forecast";
@@ -13,6 +14,7 @@ function formatPace(secPerMi: number | null): string {
 
 export default function ProfilePage() {
   const { data, units, error, busy, refresh } = useForecastData();
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   if (error) {
     return (
@@ -39,26 +41,36 @@ export default function ProfilePage() {
     units === "km"
       ? `${(profile.ytdMiles * 1.60934).toFixed(0)} km`
       : `${profile.ytdMiles.toFixed(0)} mi`;
+  const showPhoto = (profile.hasPhoto || Boolean(profile.image)) && !avatarFailed;
 
   return (
     <AppShell
       headerAction={
-        <button className="btn btn-ghost landing__btn" type="button" onClick={refresh} disabled={busy}>
+        <button
+          className="btn btn-ghost landing__btn"
+          type="button"
+          onClick={() => {
+            setAvatarFailed(false);
+            void refresh();
+          }}
+          disabled={busy}
+        >
           {busy ? "Refreshing…" : "Refresh"}
         </button>
       }
     >
       <main className="container app-page">
         <div className="profile-hero">
-          {profile.image ? (
+          {showPhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
+              key={profile.image ?? "avatar"}
               className="profile-hero__avatar"
-              src={profile.image}
+              src="/api/avatar"
               alt=""
               width={72}
               height={72}
-              referrerPolicy="no-referrer"
+              onError={() => setAvatarFailed(true)}
             />
           ) : (
             <div className="profile-hero__avatar profile-hero__avatar--placeholder" aria-hidden="true">

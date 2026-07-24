@@ -69,6 +69,7 @@ export type ForecastPayload = {
     year: number;
     name: string | null;
     image: string | null;
+    hasPhoto?: boolean;
     ytdMiles: number;
     avgPaceSecPerMi: number | null;
     racesCompleted: number;

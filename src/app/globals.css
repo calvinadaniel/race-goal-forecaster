@@ -455,6 +455,15 @@ label {
   gap: 1.75rem;
 }
 
+.plan-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 1.25rem;
+}
+
 .plan-full__week {
   display: grid;
   gap: 0.75rem;
