@@ -2,6 +2,24 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.1.0] — 2026-07-24
+
+Progressive training plans and a clearer Forecast history view.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Training
+
+- Weekly volume now **builds toward race day** (ramp → peak → taper), instead of repeating a flat week
+- Deload every 4th build week
+- Quality sessions and long-run finish work **advance** through the plan (reps, titles, race-pace finish)
+
+### Forecast
+
+- **Weekly volume** and **Recent activities** sit side by side on larger screens
+- Volume bars are **color-coded by height** (low → pine → terracotta peak)
+- Hover tooltips show the week date and exact mileage (mi/km)
+
 ## [1.0.0] — 2026-07-24
 
 First public release of **Race Goal Forecaster** — a free Strava-connected app that forecasts race finish times and suggests a training plan through race day.
@@ -60,4 +78,5 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.1.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.1.0
 [1.0.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.0.0
