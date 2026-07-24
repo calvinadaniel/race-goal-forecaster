@@ -1,24 +1,21 @@
 # Direction approved
 
-**Winner:** Direction 3 — Runna Clarity  
-**Chosen by:** user (swapped from Direction 2)  
+**Winner:** Direction 3 — Runna Clarity (landing)  
+**Nav winner:** Direction B — Bottom tabs  
+**Chosen by:** user  
 **Date:** 2026-07-23
 
-## Why
+## Landing
 - Light sand canvas, rounded coaching cards, week strip, verdict-first hierarchy.
-- Shows the product (forecast card) in the first viewport.
-- Matches goal-first coaching flow inspiration while keeping Trail Pine + Terracotta.
+- Fonts: Package C — Bricolage Grotesque + Manrope + IBM Plex Mono
+
+## App navigation (user: “B”)
+- Bottom tab bar: Home / Training / Forecast / Profile
+- Icons + labels; active state in terracotta
+- Edit goal in header (not a fifth tab)
+- Specimens: `design-demos/nav/02-bottom-tabs.html`
 
 ## Carry into production
-- Sand bg `#F7F3EB` / surface `#EFE8DC` / pine ink `#1C2A22`
-- Rounded CTAs (0.75rem), pine kicker pill
-- Hero split: copy + forecast preview card with week strip
-- Three numbered steps: Connect → Set race → Verdict
-- Fonts: **Package C** — Bricolage Grotesque (display) + Manrope (UI) + IBM Plex Mono (times/data)
-  - User choice 2026-07-23: “C”
-  - Specimens: `design-demos/fonts/03-bricolage-manrope.html`
-
-## Deferred
-- Direction 1 sticky side-nav editorial
-- Direction 2 Peloton cinematic dark stage
-- Font packages A (Schibsted+Plex) and B (Jakarta+Figtree)
+- Sand `#F7F3EB` / surface `#EFE8DC` / pine `#1C2A22` / terracotta `#C45C26`
+- Shared `AppShell` with sticky header + bottom tabbar
+- Routes: `/app` (home), `/app/training`, `/app/forecast`, `/app/profile`, `/app/goal` (edit)

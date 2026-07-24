@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AppShell } from "@/components/AppShell";
 import { DISTANCE_LIST } from "@/lib/forecast/distances";
 import { formatDuration, parseDuration } from "@/lib/units";
 
@@ -73,7 +74,7 @@ export default function EditGoalPage() {
         }),
       });
       if (!res.ok) throw new Error("Save failed");
-      router.push("/app");
+      router.push("/app/forecast");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
@@ -84,16 +85,19 @@ export default function EditGoalPage() {
 
   if (!loaded) {
     return (
-      <main className="container" style={{ padding: "2rem 0" }}>
-        <p className="muted">Loading…</p>
-      </main>
+      <AppShell showEditGoal={false}>
+        <main className="container app-page">
+          <p className="muted">Loading…</p>
+        </main>
+      </AppShell>
     );
   }
 
   return (
-    <main className="container" style={{ padding: "2rem 0 4rem" }}>
+    <AppShell showEditGoal={false}>
+      <main className="container app-page">
       <Link className="mono muted" href="/app" style={{ fontSize: "0.8rem" }}>
-        ← Back to forecast
+        ← Back to home
       </Link>
       <h1 className="display" style={{ fontSize: "2.4rem", margin: "0.75rem 0 1rem" }}>
         Edit goal
@@ -181,10 +185,11 @@ export default function EditGoalPage() {
         )}
 
         {error && <p style={{ color: "var(--danger)", margin: 0 }}>{error}</p>}
-        <button className="btn btn-primary" type="submit" disabled={busy}>
+        <button className="btn btn-primary landing__btn" type="submit" disabled={busy}>
           {busy ? "Saving…" : "Save changes"}
         </button>
       </form>
-    </main>
+      </main>
+    </AppShell>
   );
 }

@@ -72,6 +72,14 @@ export async function GET() {
       isRace: r.isRace,
     }));
 
+  const year = new Date().getFullYear();
+  const ytd = rows.filter((r) => r.startDate.getFullYear() === year);
+  const ytdMeters = ytd.reduce((s, r) => s + r.distanceM, 0);
+  const ytdSeconds = ytd.reduce((s, r) => s + r.movingTimeSec, 0);
+  const ytdMiles = ytdMeters / 1609.34;
+  const avgPaceSecPerMi =
+    ytdMiles > 0.5 ? ytdSeconds / ytdMiles : null;
+
   return NextResponse.json({
     goal: {
       distanceKey: goal.distanceKey,
@@ -83,8 +91,15 @@ export async function GET() {
     },
     forecast,
     strip: {
-      weeklyMiles: weeklyMiles.slice(-8),
+      weeklyMiles: weeklyMiles.slice(-12),
       topEfforts,
+    },
+    profile: {
+      year,
+      ytdMiles,
+      avgPaceSecPerMi,
+      racesCompleted: ytd.filter((r) => r.isRace).length,
+      activityCount: ytd.length,
     },
   });
 }
