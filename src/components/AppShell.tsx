@@ -6,16 +6,6 @@ import type { ReactNode } from "react";
 
 const TABS = [
   {
-    href: "/app",
-    label: "Home",
-    match: (p: string) => p === "/app",
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-10.5z" />
-      </svg>
-    ),
-  },
-  {
     href: "/app/training",
     label: "Training",
     match: (p: string) => p.startsWith("/app/training"),
@@ -65,7 +55,7 @@ export function AppShell({
   return (
     <div className="app-shell">
       <header className="app-shell__header container">
-        <Link href="/app" className="app-shell__logo display">
+        <Link href="/app/forecast" className="app-shell__logo display">
           Race Goal <span>Forecaster</span>
         </Link>
         <div className="app-shell__actions">

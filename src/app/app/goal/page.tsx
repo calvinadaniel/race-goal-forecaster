@@ -96,8 +96,8 @@ export default function EditGoalPage() {
   return (
     <AppShell showEditGoal={false}>
       <main className="container app-page">
-      <Link className="mono muted" href="/app" style={{ fontSize: "0.8rem" }}>
-        ← Back to home
+      <Link className="mono muted" href="/app/forecast" style={{ fontSize: "0.8rem" }}>
+        ← Back to forecast
       </Link>
       <h1 className="display" style={{ fontSize: "2.4rem", margin: "0.75rem 0 1rem" }}>
         Edit goal

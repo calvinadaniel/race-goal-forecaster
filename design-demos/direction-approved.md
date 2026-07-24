@@ -10,10 +10,10 @@
 - Fonts: Package C — Bricolage Grotesque + Manrope + IBM Plex Mono
 
 ## App navigation (user: “B”)
-- Bottom tab bar: Home / Training / Forecast / Profile
+- Bottom tab bar: Training / Forecast / Profile (Home removed)
 - Icons + labels; active state in terracotta
-- Edit goal in header (not a fifth tab)
-- Specimens: `design-demos/nav/02-bottom-tabs.html`
+- Edit goal in header (not a tab)
+- `/app` redirects to `/app/forecast`
 
 ## Carry into production
 - Sand `#F7F3EB` / surface `#EFE8DC` / pine `#1C2A22` / terracotta `#C45C26`

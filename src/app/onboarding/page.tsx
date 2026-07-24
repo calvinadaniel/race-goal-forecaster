@@ -64,7 +64,7 @@ export default function OnboardingPage() {
         }),
       });
       if (!goalRes.ok) throw new Error("Could not save goal");
-      router.push("/app");
+      router.push("/app/forecast");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

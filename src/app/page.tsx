@@ -14,7 +14,7 @@ export default async function Home({
   const session = await auth();
   const params = await searchParams;
   if (session?.user) {
-    redirect(params.callbackUrl || "/app");
+    redirect(params.callbackUrl || "/app/forecast");
   }
 
   return (
