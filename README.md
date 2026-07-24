@@ -6,6 +6,7 @@ Free Strava-connected race finish-time forecaster. Set a goal distance, target t
 
 - App: [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
 - Repo: [https://github.com/calvinadaniel/race-goal-forecaster](https://github.com/calvinadaniel/race-goal-forecaster)
+- Release notes: [CHANGELOG.md](./CHANGELOG.md) · [v1.0.0](https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.0.0)
 
 Pushes to `master` deploy via the linked Vercel project.
 
