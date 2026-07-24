@@ -1,5 +1,6 @@
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
+import { BrandLogo } from "@/components/BrandLogo";
 
 async function stravaSignIn() {
   "use server";
@@ -21,9 +22,7 @@ export default async function Home({
     <main className="landing">
       <div className="landing__wrap">
         <header className="landing__header">
-          <div className="landing__logo">
-            Race Goal <span>Forecaster</span>
-          </div>
+          <BrandLogo asLink={false} />
           <form action={stravaSignIn}>
             <button className="btn btn-primary landing__btn" type="submit">
               Continue with Strava

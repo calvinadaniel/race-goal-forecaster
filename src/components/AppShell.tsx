@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Activity, Flag, Target, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -42,9 +43,7 @@ export function AppShell({
   return (
     <div className="app-shell">
       <header className="app-shell__header container">
-        <Link href="/app/forecast" className="app-shell__logo display">
-          Race Goal <span>Forecaster</span>
-        </Link>
+        <BrandLogo href="/app/forecast" />
         <div className="app-shell__actions">
           {headerAction}
           {showEditGoal && (
