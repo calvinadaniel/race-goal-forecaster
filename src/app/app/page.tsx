@@ -22,6 +22,15 @@ type ForecastPayload = {
     confidence: string;
     why: string[];
     tips: string[];
+    trainingPlan: {
+      phase: string;
+      weeklyMiles: number;
+      runsPerWeek: number;
+      goalPacePerMi: string;
+      weeksOut: number;
+      days: { day: string; focus: string; title: string; detail: string }[];
+      notes: string[];
+    } | null;
     kpis: {
       gapSec: number;
       gapPct: number;
@@ -256,6 +265,39 @@ export default function AppPage() {
               </ol>
             </div>
           </section>
+
+          {forecast.trainingPlan && (
+            <section className="container" style={{ display: "grid", gap: "1rem", paddingBottom: "2rem" }}>
+              <h2 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>
+                Suggested week
+              </h2>
+              <p className="muted" style={{ margin: 0, maxWidth: "40rem", lineHeight: 1.55 }}>
+                {forecast.trainingPlan.phase} phase · ~{forecast.trainingPlan.weeksOut} weeks out ·{" "}
+                {forecast.trainingPlan.weeklyMiles} mi/week · {forecast.trainingPlan.runsPerWeek}{" "}
+                runs · goal pace {forecast.trainingPlan.goalPacePerMi}
+              </p>
+              <div className="plan-week">
+                {forecast.trainingPlan.days.map((d) => (
+                  <article key={d.day} className={`card plan-day plan-day--${d.focus}`}>
+                    <p className="eyebrow" style={{ margin: 0 }}>
+                      {d.day}
+                    </p>
+                    <p className="display" style={{ fontSize: "1.15rem", margin: "0.35rem 0" }}>
+                      {d.title}
+                    </p>
+                    <p className="muted" style={{ margin: 0, fontSize: "0.9rem", lineHeight: 1.45 }}>
+                      {d.detail}
+                    </p>
+                  </article>
+                ))}
+              </div>
+              <ul className="muted" style={{ margin: 0, paddingLeft: "1.1rem", lineHeight: 1.6, fontSize: "0.9rem" }}>
+                {forecast.trainingPlan.notes.map((n) => (
+                  <li key={n}>{n}</li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section className="container" style={{ display: "grid", gap: "1rem", paddingBottom: "2rem" }}>
             <h2 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>

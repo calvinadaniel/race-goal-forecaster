@@ -5,6 +5,7 @@ import {
   POSTURE_MONTHLY_GAP_CLOSE,
   type Intensity,
 } from "./postures";
+import { buildTrainingPlan, type TrainingPlan } from "./training-plan";
 
 export type EffortInput = {
   id: string;
@@ -62,6 +63,7 @@ export type ForecastResult = {
   }[];
   why: string[];
   tips: string[];
+  trainingPlan: TrainingPlan | null;
   kpis: {
     gapSec: number;
     gapPct: number;
@@ -225,6 +227,7 @@ export function computeForecast(input: ForecastInput): ForecastResult {
       tips: [
         "Sync more Strava history or add a recent race/time-trial baseline on the goal screen.",
       ],
+      trainingPlan: null,
       kpis: buildKpis(input.targetTimeSec, input.targetTimeSec, input.targetTimeSec, vol),
       scenarios: [],
       history: {
@@ -312,6 +315,15 @@ export function computeForecast(input: ForecastInput): ForecastResult {
     })),
     why,
     tips,
+    trainingPlan: buildTrainingPlan({
+      distanceKey: input.goalDistanceKey,
+      distanceM: input.goalDistanceM,
+      targetTimeSec: input.targetTimeSec,
+      intensity: input.intensity,
+      verdict: primary.verdict,
+      monthsToRace,
+      recentWeeklyMiles,
+    }),
     kpis: buildKpis(
       primary.predictedTimeSec,
       input.targetTimeSec,

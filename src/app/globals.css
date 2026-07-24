@@ -426,3 +426,21 @@ label {
 .week-bars__col span {
   font-size: 0.65rem;
 }
+
+.plan-week {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.plan-day--quality {
+  border-color: var(--accent);
+}
+
+.plan-day--long {
+  border-color: var(--pine);
+}
+
+.plan-day--rest {
+  opacity: 0.85;
+}

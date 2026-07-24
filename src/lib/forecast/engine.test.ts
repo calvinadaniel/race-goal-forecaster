@@ -92,5 +92,8 @@ describe("computeForecast", () => {
     expect(result.verdict).toBe("unlikely");
     expect(result.tips.length).toBeGreaterThan(0);
     expect(result.kpis.gapSec).toBeGreaterThan(0);
+    expect(result.trainingPlan).not.toBeNull();
+    expect(result.trainingPlan?.days).toHaveLength(7);
+    expect(result.trainingPlan?.weeklyMiles).toBeGreaterThan(0);
   });
 });
