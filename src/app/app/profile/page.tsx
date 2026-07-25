@@ -11,17 +11,15 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { KpiCard, SectionHeading, SurfaceCard } from "@/components/ui-surface";
-import { formatDuration } from "@/lib/units";
+import { RecentActivitiesList } from "@/components/RecentActivitiesList";
 import { useForecastData } from "@/lib/use-forecast";
 import { cn } from "@/lib/utils";
 
-function formatPace(secPerMi: number | null): string {
+function formatAvgPace(secPerMi: number | null): string {
   if (secPerMi == null || !Number.isFinite(secPerMi)) return "—";
   const m = Math.floor(secPerMi / 60);
   const s = Math.round(secPerMi % 60);
@@ -122,7 +120,7 @@ export default function ProfilePage() {
               <span className="text-xs font-semibold uppercase tracking-wide">Distance</span>
             </div>
           </KpiCard>
-          <KpiCard label="Average pace" value={formatPace(profile.avgPaceSecPerMi)}>
+          <KpiCard label="Average pace" value={formatAvgPace(profile.avgPaceSecPerMi)}>
             <div className="flex items-center gap-2 text-primary">
               <Timer className="size-4" />
               <span className="text-xs font-semibold uppercase tracking-wide">Pace</span>
@@ -159,24 +157,8 @@ export default function ProfilePage() {
           <section className="app-section">
             <SectionHeading icon={Trophy} title="Recent activities" />
             <SurfaceCard interactive={false}>
-              <CardContent className="space-y-0 px-0 py-0">
-                {data.strip.topEfforts.map((e, i) => (
-                  <div key={e.id}>
-                    {i > 0 ? <Separator /> : null}
-                    <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-muted/60">
-                      <div>
-                        <p className="m-0 font-semibold">{e.name || "Run"}</p>
-                        <p className="mono muted m-0 text-sm">{e.date}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="mono text-sm">
-                          {formatDuration(e.movingTimeSec)}
-                        </span>
-                        {e.isRace ? <Badge className="rounded-full">Race</Badge> : null}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <CardContent className="px-0 py-0">
+                <RecentActivitiesList activities={data.strip.topEfforts} units={units} />
               </CardContent>
             </SurfaceCard>
           </section>

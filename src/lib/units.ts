@@ -25,6 +25,22 @@ export function formatDuration(totalSec: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+/** Pace from meters + moving seconds, e.g. `8:12/mi` or `5:05/km`. */
+export function formatPace(
+  distanceM: number,
+  movingTimeSec: number,
+  units: Units,
+): string {
+  if (!(distanceM > 0) || !(movingTimeSec > 0)) return "—";
+  const dist = units === "km" ? metersToKm(distanceM) : metersToMiles(distanceM);
+  if (dist < 0.05) return "—";
+  const secPer = movingTimeSec / dist;
+  const m = Math.floor(secPer / 60);
+  const s = Math.round(secPer % 60);
+  const suffix = units === "km" ? "/km" : "/mi";
+  return `${m}:${String(s).padStart(2, "0")}${suffix}`;
+}
+
 export function parseDuration(input: string): number | null {
   const parts = input.trim().split(":").map((p) => Number(p));
   if (parts.some((n) => Number.isNaN(n))) return null;

@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { KpiCard, SectionHeading, SurfaceCard } from "@/components/ui-surface";
+import { RecentActivitiesList } from "@/components/RecentActivitiesList";
 import { formatDuration } from "@/lib/units";
 import { DISTANCES, type DistanceKey } from "@/lib/forecast/distances";
 import { POSTURE_BLURBS, POSTURE_LABELS } from "@/lib/forecast/postures";
@@ -354,26 +355,8 @@ export default function ForecastPage() {
                   <div className="forecast-split__col">
                     <SectionHeading icon={Trophy} title="Recent activities" />
                     <SurfaceCard interactive={false} className="h-full">
-                      <CardContent className="space-y-0 px-0 py-0">
-                        {strip.topEfforts.map((e, i) => (
-                          <div key={e.id}>
-                            {i > 0 ? <Separator /> : null}
-                            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-muted/60">
-                              <div>
-                                <p className="m-0 font-semibold">{e.name || "Run"}</p>
-                                <p className="mono muted m-0 text-sm">{e.date}</p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="mono text-sm">
-                                  {formatDuration(e.movingTimeSec)}
-                                </span>
-                                {e.isRace ? (
-                                  <Badge className="rounded-full">Race</Badge>
-                                ) : null}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                      <CardContent className="px-0 py-0">
+                        <RecentActivitiesList activities={strip.topEfforts} units={units} />
                       </CardContent>
                     </SurfaceCard>
                   </div>
