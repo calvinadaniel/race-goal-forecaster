@@ -34,7 +34,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(bricolage.variable, manrope.variable, plexMono.variable, "font-sans")}
+      className={cn(
+        bricolage.variable,
+        manrope.variable,
+        plexMono.variable,
+        "font-sans",
+        "dark",
+      )}
     >
       <body className={manrope.className}>
         <Providers>{children}</Providers>

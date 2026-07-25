@@ -4,54 +4,56 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Concrete Dawn (dark only): signal red + asphalt slate on near-black concrete.
+   The app ships dark-only, so these live on :root; <html> also carries .dark
+   so shadcn's dark: variants stay active. */
 :root {
-  --bg: #f7f3eb;
-  --surface: #efe8dc;
-  --text: #1c2a22;
-  --text-muted: rgba(28, 42, 34, 0.65);
-  --accent: #c45c26;
-  --accent-soft: rgba(196, 92, 38, 0.12);
-  --pine: #3f6b4f;
-  --pine-soft: rgba(63, 107, 79, 0.12);
-  --border: rgba(28, 42, 34, 0.12);
-  --danger: #8b3a2f;
-  --warn: #b7791f;
+  --bg: #131417;
+  --surface: #1c1e22;
+  --text: #f2f1ee;
+  --text-muted: rgba(242, 241, 238, 0.62);
+  --accent: #ff5e56;
+  --accent-soft: rgba(255, 94, 86, 0.16);
+  --pine: #8aa4c2;
+  --pine-soft: rgba(138, 164, 194, 0.18);
+  --border: rgba(242, 241, 238, 0.14);
+  --danger: #ff7a72;
+  --warn: #dca045;
   /* Defined on :root after next/font vars are on <html> (same element) */
   --type-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --type-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --type-mono: var(--font-plex-mono), ui-monospace, monospace;
 
-  /* shadcn tokens mapped to Trail Pine + Terracotta */
-  --background: #f7f3eb;
-  --foreground: #1c2a22;
-  --card: #fffdf8;
-  --card-foreground: #1c2a22;
-  --popover: #fffdf8;
-  --popover-foreground: #1c2a22;
-  --primary: #c45c26;
-  --primary-foreground: #fff7ef;
-  --secondary: rgba(63, 107, 79, 0.14);
-  --secondary-foreground: #1c2a22;
-  --muted: #efe8dc;
-  --muted-foreground: rgba(28, 42, 34, 0.65);
-  --accent-foreground: #fff7ef;
-  --destructive: #8b3a2f;
-  --input: rgba(28, 42, 34, 0.16);
-  --ring: rgba(196, 92, 38, 0.45);
-  --chart-1: #3f6b4f;
-  --chart-2: #c45c26;
-  --chart-3: #b7791f;
-  --chart-4: #1c2a22;
-  --chart-5: #8b3a2f;
-  --radius: 0.85rem;
-  --sidebar: #fffdf8;
-  --sidebar-foreground: #1c2a22;
-  --sidebar-primary: #c45c26;
-  --sidebar-primary-foreground: #fff7ef;
-  --sidebar-accent: #efe8dc;
-  --sidebar-accent-foreground: #1c2a22;
-  --sidebar-border: rgba(28, 42, 34, 0.12);
-  --sidebar-ring: rgba(196, 92, 38, 0.45);
+  --background: #131417;
+  --foreground: #f2f1ee;
+  --card: #1c1e22;
+  --card-foreground: #f2f1ee;
+  --popover: #1c1e22;
+  --popover-foreground: #f2f1ee;
+  --primary: #ff5e56;
+  --primary-foreground: #17181b;
+  --secondary: rgba(138, 164, 194, 0.2);
+  --secondary-foreground: #f2f1ee;
+  --muted: #24262b;
+  --muted-foreground: rgba(242, 241, 238, 0.62);
+  --accent-foreground: #17181b;
+  --destructive: #ff7a72;
+  --input: rgba(242, 241, 238, 0.18);
+  --ring: rgba(255, 94, 86, 0.5);
+  --chart-1: #8aa4c2;
+  --chart-2: #ff5e56;
+  --chart-3: #9a9ba0;
+  --chart-4: #f2f1ee;
+  --chart-5: #dca045;
+  --radius: 0.7rem;
+  --sidebar: #1c1e22;
+  --sidebar-foreground: #f2f1ee;
+  --sidebar-primary: #ff5e56;
+  --sidebar-primary-foreground: #17181b;
+  --sidebar-accent: #24262b;
+  --sidebar-accent-foreground: #f2f1ee;
+  --sidebar-border: rgba(242, 241, 238, 0.14);
+  --sidebar-ring: rgba(255, 94, 86, 0.5);
 }
 
 @theme inline {
@@ -144,7 +146,7 @@ a {
 
 .btn-primary {
   background: var(--accent);
-  color: #fff7ef;
+  color: var(--primary-foreground);
 }
 
 .btn-primary:hover {
@@ -179,9 +181,9 @@ a {
 
 .display {
   font-family: var(--type-display);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.03;
   font-optical-sizing: auto;
 }
 
@@ -209,7 +211,7 @@ input,
 select {
   width: 100%;
   border: 1px solid var(--border);
-  background: #fffdf8;
+  background: var(--card);
   color: var(--text);
   border-radius: 0.3rem;
   padding: 0.65rem 0.75rem;
@@ -285,7 +287,7 @@ label {
 
 .brand-logo__mark {
   width: 2.35rem;
-  height: auto;
+  height: 2.35rem;
   flex-shrink: 0;
   display: block;
 }
@@ -381,7 +383,7 @@ label {
 
 .landing__day--accent {
   background: var(--accent);
-  color: #fff;
+  color: var(--primary-foreground);
 }
 
 .landing__v-label {
@@ -430,7 +432,7 @@ label {
 }
 
 .landing__step {
-  background: #fffdf8;
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1.25rem;
@@ -668,11 +670,13 @@ label {
 .home-verdict {
   display: block;
   margin-bottom: 0.85rem;
-  transition: border-color 0.15s ease;
+  border-left: 4px solid var(--accent);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .home-verdict:hover {
   border-color: var(--accent);
+  box-shadow: 0 12px 28px var(--accent-soft);
 }
 
 .home-links {
@@ -724,7 +728,7 @@ label {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid var(--border);
-  background: #fffdf8;
+  background: var(--card);
   padding: 0.4rem 0.25rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
 
@@ -830,47 +834,6 @@ label {
 
 .app-tab:active {
   transform: scale(0.97);
-}
-
-.dark {
-  --bg: #152019;
-  --surface: #1c2a22;
-  --text: #f7f3eb;
-  --text-muted: rgba(247, 243, 235, 0.65);
-  --accent: #e07a45;
-  --accent-soft: rgba(224, 122, 69, 0.18);
-  --pine: #7aa888;
-  --pine-soft: rgba(122, 168, 136, 0.18);
-  --border: rgba(247, 243, 235, 0.14);
-  --background: #152019;
-  --foreground: #f7f3eb;
-  --card: #1c2a22;
-  --card-foreground: #f7f3eb;
-  --popover: #1c2a22;
-  --popover-foreground: #f7f3eb;
-  --primary: #e07a45;
-  --primary-foreground: #1c2a22;
-  --secondary: rgba(122, 168, 136, 0.2);
-  --secondary-foreground: #f7f3eb;
-  --muted: #24332a;
-  --muted-foreground: rgba(247, 243, 235, 0.65);
-  --accent-foreground: #1c2a22;
-  --destructive: #e08a7a;
-  --input: rgba(247, 243, 235, 0.18);
-  --ring: rgba(224, 122, 69, 0.5);
-  --chart-1: #7aa888;
-  --chart-2: #e07a45;
-  --chart-3: #d4a24c;
-  --chart-4: #f7f3eb;
-  --chart-5: #e08a7a;
-  --sidebar: #1c2a22;
-  --sidebar-foreground: #f7f3eb;
-  --sidebar-primary: #e07a45;
-  --sidebar-primary-foreground: #1c2a22;
-  --sidebar-accent: #24332a;
-  --sidebar-accent-foreground: #f7f3eb;
-  --sidebar-border: rgba(247, 243, 235, 0.14);
-  --sidebar-ring: rgba(224, 122, 69, 0.5);
 }
 
 @layer base {
