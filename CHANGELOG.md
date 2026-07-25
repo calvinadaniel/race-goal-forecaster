@@ -2,6 +2,21 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.2.0] — 2026-07-24
+
+Brand mark in the header, and richer recent-activity stats.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Brand
+
+- Cropped compass logo mark in the top-left (wording removed from the asset)
+- **Race Goal Forecaster** wordmark sits to the right of the mark on landing and in-app
+
+### Forecast & Profile
+
+- Recent activities show **distance · time · pace** (respects mi/km units)
+
 ## [1.1.1] — 2026-07-24
 
 Marathon (and half) long-run progression fix.
@@ -91,6 +106,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.2.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.2.0
 [1.1.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.1.1
 [1.1.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.1.0
 [1.0.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.0.0
