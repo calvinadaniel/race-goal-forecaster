@@ -30,9 +30,9 @@ export function RecentActivitiesList({
             </div>
             <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
               <span className="mono text-sm">{formatDistance(e.distanceM, units)}</span>
-              <span className="muted text-sm">·</span>
+              <span className="muted text-sm" aria-hidden="true">|</span>
               <span className="mono text-sm">{formatDuration(e.movingTimeSec)}</span>
-              <span className="muted text-sm">·</span>
+              <span className="muted text-sm" aria-hidden="true">|</span>
               <span className="mono text-sm">
                 {formatPace(e.distanceM, e.movingTimeSec, units)}
               </span>
