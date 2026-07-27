@@ -47,7 +47,7 @@ export function BrandLogo({
     <>
       <LogoMark />
       <span className="brand-logo__wordmark display">
-        Race Goal <span>Forecaster</span>
+        True<span>Pace</span>
       </span>
     </>
   );

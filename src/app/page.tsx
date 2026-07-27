@@ -32,7 +32,7 @@ export default async function Home({
 
         <section className="landing__hero">
           <div>
-            <p className="landing__kicker">Personalized race forecast</p>
+            <p className="landing__kicker">See if you&apos;ll hit your goal time</p>
             <h1 className="landing__title display">
               Your plan starts with an honest finish time.
             </h1>
@@ -89,7 +89,7 @@ export default async function Home({
 
         <footer className="landing__footer">
           <p>
-            Disclaimer: Race Goal Forecaster provides estimates only. It is not
+            Disclaimer: TruePace provides estimates only. It is not
             coaching, medical, or training advice. Always progress training
             safely and consult a professional when needed.
           </p>

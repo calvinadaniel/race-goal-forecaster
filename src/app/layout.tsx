@@ -21,9 +21,8 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Race Goal Forecaster",
-  description:
-    "Connect Strava and forecast whether you can hit your race finish time by race day.",
+  title: "TruePace",
+  description: "See if you'll hit your goal time — Strava-connected race finish forecast.",
 };
 
 export default function RootLayout({
