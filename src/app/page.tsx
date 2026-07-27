@@ -1,6 +1,8 @@
 import { auth, signIn } from "@/auth";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BrandLogo } from "@/components/BrandLogo";
+import { StravaIcon } from "@/components/StravaIcon";
 
 async function stravaSignIn() {
   "use server";
@@ -25,6 +27,7 @@ export default async function Home({
           <BrandLogo asLink={false} />
           <form action={stravaSignIn}>
             <button className="btn btn-primary landing__btn" type="submit">
+              <StravaIcon />
               Continue with Strava
             </button>
           </form>
@@ -42,6 +45,7 @@ export default async function Home({
             </p>
             <form action={stravaSignIn}>
               <button className="btn btn-primary landing__btn" type="submit">
+                <StravaIcon />
                 Continue with Strava
               </button>
             </form>
@@ -92,6 +96,11 @@ export default async function Home({
             Disclaimer: TruePace provides estimates only. It is not
             coaching, medical, or training advice. Always progress training
             safely and consult a professional when needed.
+          </p>
+          <p>
+            <Link href="/privacy" className="underline-offset-4 hover:underline">
+              Privacy Policy
+            </Link>
           </p>
         </footer>
       </div>
