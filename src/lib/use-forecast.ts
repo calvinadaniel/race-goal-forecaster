@@ -10,6 +10,12 @@ export type ForecastPayload = {
     targetTimeSec: number;
     raceDate: string;
     intensity: string;
+    manualBaseline?: {
+      distanceKey: string;
+      distanceM: number;
+      timeSec: number;
+      date: string;
+    } | null;
   };
   forecast: {
     verdict: "on_track" | "at_risk" | "unlikely";
@@ -81,6 +87,7 @@ export type ForecastPayload = {
     history: { recentWeeklyMiles: number; weeksWithRuns: number };
     effortsUsed: { label: string; date: string; equivalentSec: number }[];
   };
+  stravaLinked?: boolean;
   strip: {
     weeklyMiles: { weekStart: string; miles: number }[];
     topEfforts: {

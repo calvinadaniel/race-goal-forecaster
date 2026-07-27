@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { logOut } from "@/app/actions/auth";
 import { AppShell } from "@/components/AppShell";
+import { StravaConnectionCard } from "@/components/StravaConnectionCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,7 @@ function formatAvgPace(secPerMi: number | null): string {
 }
 
 export default function ProfilePage() {
-  const { data, units, error, busy, refresh } = useForecastData();
+  const { data, units, error, busy, refresh, load } = useForecastData();
   const [avatarFailed, setAvatarFailed] = useState(false);
 
   if (error) {
@@ -122,7 +123,8 @@ export default function ProfilePage() {
               {profile.name ?? "Runner"}
             </h1>
             <p className="muted m-0 leading-relaxed">
-              {profile.year} stats from synced Strava runs
+              {profile.year} stats
+              {data.stravaLinked ? " from synced Strava runs" : " — connect Strava to sync mileage"}
             </p>
           </div>
         </div>
@@ -166,6 +168,8 @@ export default function ProfilePage() {
             </div>
           </KpiCard>
         </div>
+
+        <StravaConnectionCard onChanged={() => void load()} />
 
         {data.strip.topEfforts.length > 0 && (
           <section className="app-section">

@@ -15,7 +15,6 @@ export default function OnboardingPage() {
   const [raceDate, setRaceDate] = useState("");
   const [intensity, setIntensity] = useState("balanced");
   const [units, setUnits] = useState<"mi" | "km">("mi");
-  const [useBaseline, setUseBaseline] = useState(false);
   const [baselineDistance, setBaselineDistance] = useState("half");
   const [baselineTime, setBaselineTime] = useState("1:43:24");
   const [baselineDate, setBaselineDate] = useState("");
@@ -25,31 +24,36 @@ export default function OnboardingPage() {
     setBusy(true);
     setError(null);
     try {
-      setSyncNote("Syncing Strava activities…");
+      setSyncNote("Checking for Strava…");
       const sync = await fetch("/api/strava/sync", { method: "POST" });
-      if (!sync.ok) {
-        const data = await sync.json().catch(() => ({}));
-        throw new Error(data.error || "Strava sync failed");
+      const syncData = await sync.json().catch(() => ({}));
+      if (syncData.skipped) {
+        setSyncNote(
+          syncData.message ||
+            "No Strava linked — forecast will use your baseline.",
+        );
+      } else if (sync.ok) {
+        setSyncNote(`Synced ${syncData.synced ?? 0} runs.`);
+      } else {
+        setSyncNote(
+          syncData.message ||
+            "Strava sync unavailable — continuing with baseline.",
+        );
       }
-      const syncData = await sync.json();
-      setSyncNote(`Synced ${syncData.synced} runs.`);
 
       const targetTimeSec = parseDuration(targetTime);
       if (!targetTimeSec) throw new Error("Invalid target time (use H:MM:SS or M:SS)");
       if (!raceDate) throw new Error("Race date is required");
 
-      let manualBaseline = null;
-      if (useBaseline) {
-        const timeSec = parseDuration(baselineTime);
-        if (!timeSec || !baselineDate) {
-          throw new Error("Baseline needs a valid time and date");
-        }
-        manualBaseline = {
-          distanceKey: baselineDistance,
-          timeSec,
-          date: baselineDate,
-        };
+      const timeSec = parseDuration(baselineTime);
+      if (!timeSec || !baselineDate) {
+        throw new Error("A recent race baseline (time + date) is required");
       }
+      const manualBaseline = {
+        distanceKey: baselineDistance,
+        timeSec,
+        date: baselineDate,
+      };
 
       const goalRes = await fetch("/api/goal", {
         method: "PUT",
@@ -80,8 +84,8 @@ export default function OnboardingPage() {
         Set your race goal
       </h1>
       <p className="muted" style={{ marginBottom: "1.5rem", maxWidth: "36rem" }}>
-        We&apos;ll sync your Strava runs, then forecast against this goal. If history is thin,
-        add a recent race as a baseline.
+        Add a recent race or time trial as your baseline so we can forecast.
+        Connect Strava anytime from Profile for synced history.
       </p>
 
       <form className="card form-grid" onSubmit={onSubmit}>
@@ -131,23 +135,17 @@ export default function OnboardingPage() {
           </label>
         </div>
 
-        <label style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-          <input
-            type="checkbox"
-            checked={useBaseline}
-            onChange={(e) => setUseBaseline(e.target.checked)}
-            style={{ width: "auto" }}
-          />
-          Add a manual baseline race (recommended if Strava history is thin)
-        </label>
-
-        {useBaseline && (
+        <div>
+          <p className="eyebrow" style={{ marginBottom: "0.75rem" }}>
+            Required baseline
+          </p>
           <div className="form-grid two">
             <label>
               Baseline distance
               <select
                 value={baselineDistance}
                 onChange={(e) => setBaselineDistance(e.target.value)}
+                required
               >
                 {DISTANCE_LIST.map((d) => (
                   <option key={d.key} value={d.key}>
@@ -162,6 +160,7 @@ export default function OnboardingPage() {
                 value={baselineTime}
                 onChange={(e) => setBaselineTime(e.target.value)}
                 placeholder="1:43:24"
+                required
               />
             </label>
             <label>
@@ -170,10 +169,11 @@ export default function OnboardingPage() {
                 type="date"
                 value={baselineDate}
                 onChange={(e) => setBaselineDate(e.target.value)}
+                required
               />
             </label>
           </div>
-        )}
+        </div>
 
         {error && (
           <p style={{ color: "var(--danger)", margin: 0 }} role="alert">

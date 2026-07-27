@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getDb } from "@/db";
-import { activities, goals, users } from "@/db/schema";
+import { accounts, activities, goals, users } from "@/db/schema";
 import { computeForecast } from "@/lib/forecast/engine";
 import type { DistanceKey } from "@/lib/forecast/distances";
 import type { Intensity } from "@/lib/forecast/postures";
@@ -92,8 +92,17 @@ export async function GET() {
   let image = normalizeAthleteImageUrl(user?.image);
   let name = user?.name ?? session.user.name ?? null;
 
+  const [stravaAccount] = await db
+    .select({ provider: accounts.provider })
+    .from(accounts)
+    .where(
+      and(eq(accounts.userId, session.user.id), eq(accounts.provider, "strava")),
+    )
+    .limit(1);
+  const stravaLinked = Boolean(stravaAccount);
+
   // Backfill photo for accounts that signed in before we stored absolute URLs
-  if (!image) {
+  if (!image && stravaLinked) {
     try {
       const refreshed = await refreshStravaProfile(session.user.id);
       image = refreshed.image;
@@ -113,6 +122,7 @@ export async function GET() {
       manualBaseline: goal.manualBaseline,
     },
     forecast,
+    stravaLinked,
     strip: {
       weeklyMiles: weeklyMiles.slice(-12),
       topEfforts,

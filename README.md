@@ -1,6 +1,6 @@
 # Race Goal Forecaster
 
-Free Strava-connected race finish-time forecaster. Set a goal distance, target time, race date, and training posture (Conservative / Balanced / Aggressive) to see if you're on track.
+Free Google-account race finish-time forecaster (optional Strava sync). Set a goal distance, target time, race date, and training posture (Conservative / Balanced / Aggressive) to see if you're on track.
 
 ## Live
 
@@ -10,20 +10,23 @@ Free Strava-connected race finish-time forecaster. Set a goal distance, target t
 
 Pushes to `master` deploy via the linked Vercel project.
 
-Before Strava login works in production, set these in the Vercel project env and run `npm run db:push` against Neon:
+Before login works in production, set these in the Vercel project env and run `npm run db:push` against Neon:
 
 - `DATABASE_URL`
 - `AUTH_SECRET`
-- `AUTH_STRAVA_ID`
+- `AUTH_GOOGLE_ID`
+- `AUTH_GOOGLE_SECRET`
+- `AUTH_STRAVA_ID` (optional sync + legacy Strava sign-in)
 - `AUTH_STRAVA_SECRET`
 - `AUTH_URL=https://race-goal-forecaster.vercel.app`
 
-Register Strava callback domain for the Vercel host (`race-goal-forecaster.vercel.app`).
+Google OAuth redirect: `https://race-goal-forecaster.vercel.app/api/auth/callback/google`  
+Strava callback domain: `race-goal-forecaster.vercel.app`
 
 ## Stack
 
 - Next.js App Router (Vercel)
-- Auth.js + Strava OAuth
+- Auth.js + Google OAuth (primary) + optional Strava
 - Neon Postgres + Drizzle ORM
 - TypeScript forecast engine (Riegel equivalency)
 
@@ -37,11 +40,13 @@ cp .env.example .env.local
 
 2. Create a [Neon](https://neon.tech) database and set `DATABASE_URL`.
 
-3. Create a [Strava API app](https://www.strava.com/settings/api). Set authorization callback domain to your host (e.g. `localhost` for local, your Vercel domain in production). Auth.js uses `/api/auth/callback/strava`.
+3. Create a [Google Cloud OAuth client](https://console.cloud.google.com/apis/credentials) (Web application). Add authorized redirect URI `http://localhost:3000/api/auth/callback/google` (and your production `/api/auth/callback/google`).
 
-4. Set `AUTH_STRAVA_ID`, `AUTH_STRAVA_SECRET`, and `AUTH_SECRET` (e.g. `openssl rand -base64 32`).
+4. Optionally create a [Strava API app](https://www.strava.com/settings/api) for synced activities. Auth.js uses `/api/auth/callback/strava`.
 
-5. Push schema and run:
+5. Set `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `AUTH_SECRET`, and Strava keys if using sync.
+
+6. Push schema and run:
 
 ```bash
 npm install
@@ -62,8 +67,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Product notes
 
-- Strava is the only activity source in MVP (`ActivitySource` interface is ready for Garmin/COROS/Apple later).
-- Cold start: requires ~8 weeks of history + a quality effort, or a manual baseline race.
+- Primary sign-in is Google; Strava is an optional connection for activity sync.
+- Cold start: a manual baseline race is required at onboarding; Strava history deepens the forecast when linked.
 - Legacy static dashboard + Python scripts remain under `index.html`, `css/`, `js/`, `data/`, `scripts/` as reference only.
 
 ## Disclaimer

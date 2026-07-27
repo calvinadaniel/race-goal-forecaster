@@ -1,12 +1,9 @@
-import { auth, signIn } from "@/auth";
+import Link from "next/link";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { signInWithGoogle, signInWithStrava } from "@/app/actions/auth";
 import { BrandLogo } from "@/components/BrandLogo";
 import { StravaIcon } from "@/components/StravaIcon";
-
-async function stravaSignIn() {
-  "use server";
-  await signIn("strava", { redirectTo: "/onboarding" });
-}
 
 export default async function Home({
   searchParams,
@@ -24,10 +21,9 @@ export default async function Home({
       <div className="landing__wrap">
         <header className="landing__header">
           <BrandLogo asLink={false} />
-          <form action={stravaSignIn}>
+          <form action={signInWithGoogle}>
             <button className="btn btn-primary landing__btn" type="submit">
-              <StravaIcon />
-              Continue with Strava
+              Continue with Google
             </button>
           </form>
         </header>
@@ -42,12 +38,28 @@ export default async function Home({
               Goal-first coaching flow — set the race, set the intensity, see a
               clear verdict before you commit to the block.
             </p>
-            <form action={stravaSignIn}>
+            <form action={signInWithGoogle}>
               <button className="btn btn-primary landing__btn" type="submit">
+                Continue with Google
+              </button>
+            </form>
+            <form action={signInWithStrava} style={{ marginTop: "0.75rem" }}>
+              <button
+                className="btn landing__btn"
+                type="submit"
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                }}
+              >
                 <StravaIcon />
                 Continue with Strava
               </button>
             </form>
+            <p className="muted" style={{ marginTop: "0.75rem", fontSize: "0.85rem" }}>
+              Strava is optional — connect later from Profile for synced runs.
+            </p>
           </div>
 
           <aside className="landing__card" aria-label="Forecast preview">
@@ -66,8 +78,8 @@ export default async function Home({
               1:42:18 <span>goal 1:45:00</span>
             </p>
             <p className="landing__v-note">
-              Balanced posture · Half · Oct 18. Built from your best recent
-              efforts + weekly volume.
+              Balanced posture · Half · Oct 18. Built from your baseline race or
+              synced efforts + weekly volume.
             </p>
           </aside>
         </section>
@@ -75,13 +87,13 @@ export default async function Home({
         <section className="landing__steps" id="how">
           <article className="landing__step">
             <div className="landing__step-n">1</div>
-            <h2 className="display">Connect Strava</h2>
-            <p>We sync your runs and pull quality efforts near race distances.</p>
+            <h2 className="display">Create your account</h2>
+            <p>Sign in with Google. Connect Strava later if you want synced history.</p>
           </article>
           <article className="landing__step">
             <div className="landing__step-n">2</div>
             <h2 className="display">Set the race</h2>
-            <p>Distance, target time, race date, and how hard you&apos;ll train.</p>
+            <p>Distance, target time, race date, and a recent race baseline.</p>
           </article>
           <article className="landing__step">
             <div className="landing__step-n">3</div>
@@ -95,6 +107,11 @@ export default async function Home({
             Disclaimer: TruePace provides estimates only. It is not
             coaching, medical, or training advice. Always progress training
             safely and consult a professional when needed.
+          </p>
+          <p>
+            <Link href="/privacy" className="underline-offset-4 hover:underline">
+              Privacy Policy
+            </Link>
           </p>
         </footer>
       </div>

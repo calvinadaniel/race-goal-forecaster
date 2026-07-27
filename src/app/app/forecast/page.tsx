@@ -116,7 +116,13 @@ export default function ForecastPage() {
         </p>
         <p className="muted max-w-xl leading-relaxed">
           Blended fitness ≈ {formatDuration(forecast.currentEquivalentSec)} at {distLabel}.
-          Confidence: {forecast.confidence}.
+          Confidence: {forecast.confidence}.{" "}
+          {data.stravaLinked
+            ? "Based on synced races/workouts"
+            : goal.manualBaseline
+              ? "Based on your manual baseline"
+              : "Add a baseline or connect Strava for a sharper read"}
+          .
         </p>
 
         {forecast.fitness &&

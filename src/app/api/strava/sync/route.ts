@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { getDb } from "@/db";
 import { accounts, activities } from "@/db/schema";
@@ -16,59 +16,60 @@ export async function POST() {
   const [account] = await db
     .select()
     .from(accounts)
-    .where(eq(accounts.userId, session.user.id))
+    .where(
+      and(eq(accounts.userId, session.user.id), eq(accounts.provider, "strava")),
+    )
     .limit(1);
 
   if (!account) {
-    return NextResponse.json({ error: "No Strava account linked" }, { status: 400 });
+    return NextResponse.json({
+      skipped: true,
+      synced: 0,
+      reason: "no_strava",
+      message: "No Strava account linked — using your manual baseline if set.",
+    });
   }
 
-  const token = await getValidStravaToken(account);
-  if (token.rotated) {
-    await db
-      .update(accounts)
-      .set({
-        access_token: token.accessToken,
-        refresh_token: token.refreshToken,
-        expires_at: token.expiresAt,
-      })
-      .where(eq(accounts.userId, session.user.id));
-  }
-
-  let profile: { name: string | null; image: string | null } = {
-    name: null,
-    image: null,
-  };
   try {
-    profile = await refreshStravaProfile(session.user.id);
-  } catch {
-    // Profile photo/name is best-effort; activity sync should still proceed.
-  }
+    const token = await getValidStravaToken(account);
+    if (token.rotated) {
+      await db
+        .update(accounts)
+        .set({
+          access_token: token.accessToken,
+          refresh_token: token.refreshToken,
+          expires_at: token.expiresAt,
+        })
+        .where(
+          and(
+            eq(accounts.userId, session.user.id),
+            eq(accounts.provider, "strava"),
+          ),
+        );
+    }
 
-  const since = new Date();
-  since.setMonth(since.getMonth() - 18);
+    let profile: { name: string | null; image: string | null } = {
+      name: null,
+      image: null,
+    };
+    try {
+      profile = await refreshStravaProfile(session.user.id);
+    } catch {
+      // Profile photo/name is best-effort; activity sync should still proceed.
+    }
 
-  const rows = await stravaSource.listActivities(token.accessToken, since);
+    const since = new Date();
+    since.setMonth(since.getMonth() - 18);
 
-  for (const a of rows) {
-    await db
-      .insert(activities)
-      .values({
-        id: a.id,
-        userId: session.user.id,
-        source: "strava",
-        name: a.name,
-        startDate: a.startDate,
-        distanceM: a.distanceM,
-        movingTimeSec: a.movingTimeSec,
-        avgHr: a.avgHr,
-        sufferScore: a.sufferScore,
-        isRace: a.isRace,
-        workoutType: a.workoutType,
-      })
-      .onConflictDoUpdate({
-        target: activities.id,
-        set: {
+    const rows = await stravaSource.listActivities(token.accessToken, since);
+
+    for (const a of rows) {
+      await db
+        .insert(activities)
+        .values({
+          id: a.id,
+          userId: session.user.id,
+          source: "strava",
           name: a.name,
           startDate: a.startDate,
           distanceM: a.distanceM,
@@ -77,12 +78,37 @@ export async function POST() {
           sufferScore: a.sufferScore,
           isRace: a.isRace,
           workoutType: a.workoutType,
-        },
-      });
-  }
+        })
+        .onConflictDoUpdate({
+          target: activities.id,
+          set: {
+            name: a.name,
+            startDate: a.startDate,
+            distanceM: a.distanceM,
+            movingTimeSec: a.movingTimeSec,
+            avgHr: a.avgHr,
+            sufferScore: a.sufferScore,
+            isRace: a.isRace,
+            workoutType: a.workoutType,
+          },
+        });
+    }
 
-  return NextResponse.json({
-    synced: rows.length,
-    profile,
-  });
+    return NextResponse.json({
+      skipped: false,
+      synced: rows.length,
+      profile,
+    });
+  } catch (e) {
+    return NextResponse.json(
+      {
+        skipped: true,
+        synced: 0,
+        error: e instanceof Error ? e.message : "Strava sync failed",
+        message:
+          "Could not sync Strava (limit or auth). Your account and baseline still work.",
+      },
+      { status: 200 },
+    );
+  }
 }
