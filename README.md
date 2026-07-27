@@ -6,7 +6,7 @@ Free Google-account race finish-time forecaster (optional Strava sync). Set a go
 
 - App: [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
 - Repo: [https://github.com/calvinadaniel/race-goal-forecaster](https://github.com/calvinadaniel/race-goal-forecaster)
-- Release notes: [CHANGELOG.md](./CHANGELOG.md) · [v1.7.1](https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.7.1)
+- Release notes: [CHANGELOG.md](./CHANGELOG.md) · [v1.7.2](https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.7.2)
 
 Pushes to `master` deploy via the linked Vercel project.
 
