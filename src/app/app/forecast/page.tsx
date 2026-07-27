@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  Activity,
   ArrowRight,
   CalendarDays,
   CircleHelp,
@@ -20,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { KpiCard, SectionHeading, SurfaceCard } from "@/components/ui-surface";
 import { RecentActivitiesList } from "@/components/RecentActivitiesList";
 import { formatDuration } from "@/lib/units";
@@ -125,67 +123,26 @@ export default function ForecastPage() {
           .
         </p>
 
-        {forecast.fitness &&
-          (forecast.fitness.pr || forecast.fitness.recentForm) &&
-          !forecast.needsBaseline && (
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 max-w-2xl">
-              <SurfaceCard className="gap-1 py-3" interactive={false}>
-                <CardHeader className="px-4 pb-0 pt-0">
-                  <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em]">
-                    Goal-distance PR
-                  </CardDescription>
-                  <CardTitle className="mono text-2xl font-medium">
-                    {forecast.fitness.pr
-                      ? formatDuration(forecast.fitness.pr.equivalentSec)
-                      : "—"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-4 pt-1 pb-0">
-                  <p className="muted m-0 text-sm">
-                    {forecast.fitness.pr
-                      ? `${forecast.fitness.pr.label} · ${forecast.fitness.pr.date} · ${forecast.fitness.pr.ageDays}d ago`
-                      : "No goal-distance race yet"}
-                  </p>
-                </CardContent>
-              </SurfaceCard>
-              <SurfaceCard className="gap-1 py-3" interactive={false}>
-                <CardHeader className="px-4 pb-0 pt-0">
-                  <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em]">
-                    {forecast.fitness.recentForm &&
-                    forecast.fitness.recentForm.ageDays > 90
-                      ? "Best race/workout (12 mo)"
-                      : "Recent form (races/workouts)"}
-                  </CardDescription>
-                  <CardTitle className="mono text-2xl font-medium">
-                    {forecast.fitness.recentForm
-                      ? formatDuration(forecast.fitness.recentForm.equivalentSec)
-                      : "—"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-4 pt-1 pb-0">
-                  <p className="muted m-0 text-sm">
-                    {forecast.fitness.recentForm
-                      ? `${forecast.fitness.recentForm.label} · ${forecast.fitness.recentForm.date}`
-                      : "No race or workout tagged in last 90 days"}
-                  </p>
-                </CardContent>
-              </SurfaceCard>
-            </div>
-          )}
-
-        {forecast.fitness?.divergence === "form_behind" &&
-          forecast.fitness.pr &&
-          forecast.fitness.recentForm &&
-          !forecast.needsBaseline && (
-            <p className="muted mt-3 max-w-2xl text-sm leading-relaxed">
-              Projection blends {Math.round(forecast.fitness.prWeight * 100)}% PR /{" "}
-              {Math.round((1 - forecast.fitness.prWeight) * 100)}% recent form
-              {forecast.fitness.formGapSec != null && forecast.fitness.formGapSec > 0
-                ? ` — recent form is ~${formatDuration(forecast.fitness.formGapSec)} behind the PR`
-                : ""}
-              .
-            </p>
-          )}
+        {/* Recent form + volume UI hidden until Strava/API sync is reliable for beta */}
+        {forecast.fitness?.pr && !forecast.needsBaseline && (
+          <div className="mt-4 max-w-md">
+            <SurfaceCard className="gap-1 py-3" interactive={false}>
+              <CardHeader className="px-4 pb-0 pt-0">
+                <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em]">
+                  Goal-distance PR
+                </CardDescription>
+                <CardTitle className="mono text-2xl font-medium">
+                  {formatDuration(forecast.fitness.pr.equivalentSec)}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pt-1 pb-0">
+                <p className="muted m-0 text-sm">
+                  {`${forecast.fitness.pr.label} · ${forecast.fitness.pr.date} · ${forecast.fitness.pr.ageDays}d ago`}
+                </p>
+              </CardContent>
+            </SurfaceCard>
+          </div>
+        )}
 
         {!forecast.needsBaseline && (
           <div className="kpi-row mt-6">
@@ -213,16 +170,6 @@ export default function ForecastPage() {
                 value={Math.min(100, (1 / Math.max(forecast.kpis.fitnessRatio, 0.5)) * 100)}
                 aria-label="Fitness"
                 indicatorClassName="bg-[var(--pine)]"
-              />
-            </KpiCard>
-            <KpiCard
-              label="Volume score"
-              value={`${(forecast.kpis.volumeScore * 100).toFixed(0)}%`}
-            >
-              <Progress
-                value={Math.min(100, (forecast.kpis.volumeScore / 1.15) * 100)}
-                aria-label="Volume"
-                indicatorClassName="bg-primary"
               />
             </KpiCard>
           </div>
@@ -363,73 +310,16 @@ export default function ForecastPage() {
               </SurfaceCard>
             </section>
 
-            <section className="app-section">
-              <div className="forecast-split">
-                <div className="forecast-split__col">
-                  <SectionHeading icon={Activity} title="Weekly volume" tone="pine" />
-                  <SurfaceCard interactive={false} className="h-full">
-                    <CardContent>
-                      <div className="week-bars" aria-label="Weekly mileage chart">
-                        {strip.weeklyMiles.map((w) => {
-                          const max = Math.max(...strip.weeklyMiles.map((x) => x.miles), 1);
-                          const ratio = w.miles / max;
-                          const label =
-                            units === "km"
-                              ? (w.miles * 1.60934).toFixed(1)
-                              : w.miles.toFixed(1);
-                          const unit = units === "km" ? "km" : "mi";
-                          const barColor =
-                            ratio >= 0.85
-                              ? "var(--accent)"
-                              : ratio >= 0.55
-                                ? "var(--pine)"
-                                : ratio >= 0.25
-                                  ? "color-mix(in srgb, var(--pine) 65%, var(--surface))"
-                                  : "color-mix(in srgb, var(--text-muted) 45%, var(--surface))";
-                          return (
-                            <Tooltip key={w.weekStart}>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="week-bars__col border-0 bg-transparent p-0"
-                                  aria-label={`${w.weekStart}: ${label} ${unit}`}
-                                >
-                                  <div
-                                    className="week-bars__bar"
-                                    style={{
-                                      height: `${Math.max(6, ratio * 100)}%`,
-                                      background: barColor,
-                                    }}
-                                  />
-                                  <span className="mono muted">{Math.round(Number(label))}</span>
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="m-0 font-semibold">{w.weekStart}</p>
-                                <p className="mono m-0">
-                                  {label} {unit}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </SurfaceCard>
-                </div>
-
-                {strip.topEfforts.length > 0 && (
-                  <div className="forecast-split__col">
-                    <SectionHeading icon={Trophy} title="Recent activities" />
-                    <SurfaceCard interactive={false} className="h-full">
-                      <CardContent className="px-0 py-0">
-                        <RecentActivitiesList activities={strip.topEfforts} units={units} />
-                      </CardContent>
-                    </SurfaceCard>
-                  </div>
-                )}
-              </div>
-            </section>
+            {strip.topEfforts.length > 0 && (
+              <section className="app-section">
+                <SectionHeading icon={Trophy} title="Recent activities" />
+                <SurfaceCard interactive={false}>
+                  <CardContent className="px-0 py-0">
+                    <RecentActivitiesList activities={strip.topEfforts} units={units} />
+                  </CardContent>
+                </SurfaceCard>
+              </section>
+            )}
 
             <p className="mono muted pb-4 text-xs">
               Estimate only — not coaching or medical advice.

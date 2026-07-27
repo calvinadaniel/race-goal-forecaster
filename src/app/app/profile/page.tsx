@@ -1,36 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Footprints,
-  Gauge,
-  LogOut,
-  Medal,
-  RefreshCw,
-  Timer,
-  Trophy,
-} from "lucide-react";
+import Link from "next/link";
+import { LogOut, RefreshCw, Route } from "lucide-react";
 import { logOut } from "@/app/actions/auth";
 import { AppShell } from "@/components/AppShell";
-import { StravaConnectionCard } from "@/components/StravaConnectionCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { KpiCard, SectionHeading, SurfaceCard } from "@/components/ui-surface";
-import { RecentActivitiesList } from "@/components/RecentActivitiesList";
+import { SurfaceCard } from "@/components/ui-surface";
+import { DISTANCES, type DistanceKey } from "@/lib/forecast/distances";
+import { formatDuration } from "@/lib/units";
 import { useForecastData } from "@/lib/use-forecast";
 import { cn } from "@/lib/utils";
 
-function formatAvgPace(secPerMi: number | null): string {
-  if (secPerMi == null || !Number.isFinite(secPerMi)) return "—";
-  const m = Math.floor(secPerMi / 60);
-  const s = Math.round(secPerMi % 60);
-  return `${m}:${String(s).padStart(2, "0")}/mi`;
-}
-
 export default function ProfilePage() {
-  const { data, units, error, busy, refresh, load } = useForecastData();
+  const { data, error, busy, refresh } = useForecastData();
   const [avatarFailed, setAvatarFailed] = useState(false);
 
   if (error) {
@@ -54,23 +40,24 @@ export default function ProfilePage() {
               <Skeleton className="h-8 w-40" />
             </div>
           </div>
-          <div className="profile-grid">
-            <Skeleton className="h-28 rounded-xl" />
-            <Skeleton className="h-28 rounded-xl" />
-            <Skeleton className="h-28 rounded-xl" />
-            <Skeleton className="h-28 rounded-xl" />
-          </div>
+          <Skeleton className="h-36 rounded-xl" />
         </main>
       </AppShell>
     );
   }
 
-  const { profile } = data;
-  const ytdDisplay =
-    units === "km"
-      ? `${(profile.ytdMiles * 1.60934).toFixed(0)} km`
-      : `${profile.ytdMiles.toFixed(0)} mi`;
-  const showPhoto = (profile.hasPhoto || Boolean(profile.image)) && !avatarFailed;
+  const { profile, goal } = data;
+  const baseline = goal.manualBaseline ?? null;
+  const baselineLabel =
+    baseline && baseline.distanceKey in DISTANCES
+      ? DISTANCES[baseline.distanceKey as DistanceKey].label
+      : null;
+  const photoSrc =
+    !avatarFailed && profile.image
+      ? profile.image
+      : !avatarFailed && profile.hasPhoto
+        ? "/api/avatar"
+        : undefined;
 
   return (
     <AppShell
@@ -105,11 +92,12 @@ export default function ProfilePage() {
       <main className="container app-page">
         <div className="profile-hero">
           <Avatar className="profile-hero__avatar size-[72px] border border-border shadow-sm">
-            {showPhoto ? (
+            {photoSrc ? (
               <AvatarImage
-                key={profile.image ?? "avatar"}
-                src="/api/avatar"
+                key={photoSrc}
+                src={photoSrc}
                 alt=""
+                referrerPolicy="no-referrer"
                 onError={() => setAvatarFailed(true)}
               />
             ) : null}
@@ -123,64 +111,56 @@ export default function ProfilePage() {
               {profile.name ?? "Runner"}
             </h1>
             <p className="muted m-0 leading-relaxed">
-              {profile.year} stats
-              {data.stravaLinked ? " from synced Strava runs" : " — connect Strava to sync mileage"}
+              Account &amp; race baseline for your forecast
             </p>
           </div>
         </div>
 
-        <div className="profile-grid">
-          <KpiCard label="YTD mileage" value={ytdDisplay}>
-            <div className="flex items-center gap-2 text-[var(--pine)]">
-              <Footprints className="size-4" />
-              <span className="text-xs font-semibold uppercase tracking-wide">Distance</span>
-            </div>
-          </KpiCard>
-          <KpiCard label="Average pace" value={formatAvgPace(profile.avgPaceSecPerMi)}>
-            <div className="flex items-center gap-2 text-primary">
-              <Timer className="size-4" />
-              <span className="text-xs font-semibold uppercase tracking-wide">Pace</span>
-            </div>
-          </KpiCard>
-          <SurfaceCard className="gap-2 py-4">
-            <CardHeader className="px-4 pb-0">
-              <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em] text-[var(--accent)]">
-                Races completed
-              </CardDescription>
-              <CardTitle className="mono text-3xl font-medium">
-                {profile.racesCompleted}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 px-4 pt-0">
+        <section className="app-section">
+          <SurfaceCard
+            interactive={false}
+            className="border-primary/35 shadow-[0_12px_28px_var(--accent-soft)]"
+          >
+            <CardHeader className="gap-2">
               <div className="flex items-center gap-2 text-primary">
-                <Medal className="size-4" />
-                <span className="text-xs font-semibold uppercase tracking-wide">Strava races</span>
+                <Route className="size-4" />
+                <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em] text-primary">
+                  Race baseline
+                </CardDescription>
               </div>
-              <p className="muted m-0 text-sm">
-                Marked as race in Strava (not &quot;wins&quot; — we don&apos;t have place data)
-              </p>
+              {baseline && baselineLabel ? (
+                <>
+                  <CardTitle className="display text-[clamp(1.6rem,4vw,2.2rem)]">
+                    {baselineLabel}
+                  </CardTitle>
+                  <p className="mono m-0 text-3xl font-medium">
+                    {formatDuration(baseline.timeSec)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <CardTitle className="display text-xl">No baseline yet</CardTitle>
+                  <CardDescription className="m-0 text-base leading-relaxed">
+                    Add a recent race result so we can project your goal finish.
+                  </CardDescription>
+                </>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {baseline ? (
+                <p className="muted m-0 text-sm leading-relaxed">
+                  Recorded {baseline.date}. This anchors your forecast until activity
+                  sync is available.
+                </p>
+              ) : null}
+              <Button asChild className="landing__btn h-10 rounded-xl font-bold">
+                <Link href="/app/goal">
+                  {baseline ? "Edit baseline" : "Add baseline"}
+                </Link>
+              </Button>
             </CardContent>
           </SurfaceCard>
-          <KpiCard label="Activities" value={String(profile.activityCount)}>
-            <div className="flex items-center gap-2 text-[var(--pine)]">
-              <Gauge className="size-4" />
-              <span className="text-xs font-semibold uppercase tracking-wide">YTD runs</span>
-            </div>
-          </KpiCard>
-        </div>
-
-        <StravaConnectionCard onChanged={() => void load()} />
-
-        {data.strip.topEfforts.length > 0 && (
-          <section className="app-section">
-            <SectionHeading icon={Trophy} title="Recent activities" />
-            <SurfaceCard interactive={false}>
-              <CardContent className="px-0 py-0">
-                <RecentActivitiesList activities={data.strip.topEfforts} units={units} />
-              </CardContent>
-            </SurfaceCard>
-          </section>
-        )}
+        </section>
       </main>
     </AppShell>
   );

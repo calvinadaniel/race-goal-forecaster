@@ -7,7 +7,6 @@ import { computeForecast } from "@/lib/forecast/engine";
 import type { DistanceKey } from "@/lib/forecast/distances";
 import type { Intensity } from "@/lib/forecast/postures";
 import { normalizeAthleteImageUrl } from "@/lib/strava";
-import { refreshStravaProfile } from "@/lib/strava-profile";
 import { weeklyVolumeFromActivities } from "@/lib/units";
 
 export async function GET() {
@@ -89,8 +88,10 @@ export async function GET() {
     .where(eq(users.id, session.user.id))
     .limit(1);
 
-  let image = normalizeAthleteImageUrl(user?.image);
-  let name = user?.name ?? session.user.name ?? null;
+  const image =
+    normalizeAthleteImageUrl(user?.image) ??
+    normalizeAthleteImageUrl(session.user.image);
+  const name = user?.name ?? session.user.name ?? null;
 
   const [stravaAccount] = await db
     .select({ provider: accounts.provider })
@@ -100,17 +101,6 @@ export async function GET() {
     )
     .limit(1);
   const stravaLinked = Boolean(stravaAccount);
-
-  // Backfill photo for accounts that signed in before we stored absolute URLs
-  if (!image && stravaLinked) {
-    try {
-      const refreshed = await refreshStravaProfile(session.user.id);
-      image = refreshed.image;
-      if (refreshed.name) name = refreshed.name;
-    } catch {
-      // Keep placeholder if Strava profile fetch fails
-    }
-  }
 
   return NextResponse.json({
     goal: {
