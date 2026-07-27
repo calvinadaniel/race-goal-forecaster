@@ -221,6 +221,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.7.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.7.0
 [1.6.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.6.1
 [1.6.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.6.0
 [1.5.2]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.5.2
