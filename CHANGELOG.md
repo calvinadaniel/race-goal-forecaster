@@ -2,6 +2,18 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.4.0] — 2026-07-27
+
+Atlas System typography — Source Serif 4 + Source Sans 3.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Brand
+
+- Display / headings: **Source Serif 4** (replaces Bricolage Grotesque)
+- UI / body: **Source Sans 3** (replaces Manrope)
+- Pace / mileage mono stays **IBM Plex Mono**
+
 ## [1.3.0] — 2026-07-25
 
 Concrete Dawn visual refresh — dark-only urban palette and a city-compass mark.
@@ -137,6 +149,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.4.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.4.0
 [1.3.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.3.0
 [1.2.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.2.1
 [1.2.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.2.0
