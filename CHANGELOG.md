@@ -2,6 +2,22 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.7.0] — 2026-07-27
+
+Sign in with Google first; Strava is optional. Manual race baseline is required so forecasts work without a sync.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Auth & onboarding
+
+- **Google** is the primary sign-in; existing Strava users can still sign in with Strava
+- Onboarding requires a **manual race baseline**; Strava sync is soft and optional
+- Profile: connect / disconnect Strava on your Google account
+
+### Legal
+
+- Public **Privacy** page for Strava / Google OAuth review
+
 ## [1.6.1] — 2026-07-27
 
 Easy runs no longer drag fitness — only Strava races and marked workouts feed PR / recent form.
