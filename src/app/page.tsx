@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { signInWithGoogle, signInWithStrava } from "@/app/actions/auth";
+import { signInWithGoogle } from "@/app/actions/auth";
 import { BrandLogo } from "@/components/BrandLogo";
-import { StravaIcon } from "@/components/StravaIcon";
+import { GoogleIcon } from "@/components/GoogleIcon";
 
 export default async function Home({
   searchParams,
@@ -23,6 +23,7 @@ export default async function Home({
           <BrandLogo asLink={false} />
           <form action={signInWithGoogle}>
             <button className="btn btn-primary landing__btn" type="submit">
+              <GoogleIcon />
               Continue with Google
             </button>
           </form>
@@ -40,26 +41,10 @@ export default async function Home({
             </p>
             <form action={signInWithGoogle}>
               <button className="btn btn-primary landing__btn" type="submit">
+                <GoogleIcon />
                 Continue with Google
               </button>
             </form>
-            <form action={signInWithStrava} style={{ marginTop: "0.75rem" }}>
-              <button
-                className="btn landing__btn"
-                type="submit"
-                style={{
-                  background: "transparent",
-                  border: "1px solid var(--border)",
-                  color: "var(--foreground)",
-                }}
-              >
-                <StravaIcon />
-                Continue with Strava
-              </button>
-            </form>
-            <p className="muted" style={{ marginTop: "0.75rem", fontSize: "0.85rem" }}>
-              Strava is optional — connect later from Profile for synced runs.
-            </p>
           </div>
 
           <aside className="landing__card" aria-label="Forecast preview">
