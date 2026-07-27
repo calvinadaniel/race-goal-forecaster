@@ -2,6 +2,18 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.6.0] — 2026-07-27
+
+Forecast fitness now blends your goal-distance PR with recent form so a strong race isn’t ignored — and a stale PR can’t fully paper over a slow comeback.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Forecast
+
+- Fitness window expanded to **12 months**, with goal-distance PRs always kept
+- Dual signals: **PR** vs **recent form (90d)**, blended for the projection
+- Forecast page shows both signals and the blend when they diverge
+
 ## [1.5.2] — 2026-07-27
 
 Profile log out so you can leave your Strava session cleanly.
@@ -182,6 +194,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.6.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.6.0
 [1.5.2]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.5.2
 [1.5.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.5.1
 [1.5.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.5.0
