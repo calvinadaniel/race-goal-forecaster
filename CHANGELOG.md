@@ -2,6 +2,16 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.5.2] — 2026-07-27
+
+Profile log out so you can leave your Strava session cleanly.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Profile
+
+- **Log out** next to Refresh — ends the Auth.js session and returns to the landing page
+
 ## [1.5.1] — 2026-07-27
 
 Strava sign-in button shows the official Strava mark.
