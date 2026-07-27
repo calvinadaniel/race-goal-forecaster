@@ -2,6 +2,19 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.5.0] — 2026-07-27
+
+Renamed the product to **TruePace** in the app UI.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Brand
+
+- Wordmark is now **True****Pace** (signal red on Pace)
+- Landing kicker: **See if you’ll hit your goal time**
+- Document title / disclaimer updated to TruePace
+- GitHub repo and Vercel URL unchanged for this pass
+
 ## [1.4.0] — 2026-07-27
 
 Atlas System typography — Source Serif 4 + Source Sans 3.
@@ -149,6 +162,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.5.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.5.0
 [1.4.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.4.0
 [1.3.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.3.0
 [1.2.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.2.1
