@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Strava from "next-auth/providers/strava";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { accounts, users } from "@/db/schema";
 import { normalizeAthleteImageUrl } from "@/lib/strava";
@@ -50,7 +50,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const existing = await db
         .select()
         .from(accounts)
-        .where(eq(accounts.providerAccountId, athleteId))
+        .where(
+          and(
+            eq(accounts.provider, "strava"),
+            eq(accounts.providerAccountId, athleteId),
+          ),
+        )
         .limit(1);
 
       let userId: string;
@@ -65,7 +70,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             scope: account.scope,
             token_type: account.token_type,
           })
-          .where(eq(accounts.providerAccountId, athleteId));
+          .where(
+            and(
+              eq(accounts.provider, "strava"),
+              eq(accounts.providerAccountId, athleteId),
+            ),
+          );
         const raw = profile as Record<string, unknown> | undefined;
         const image = imageFromAuthProfile(raw);
         const name = profile?.name ?? null;
@@ -111,7 +121,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const row = await db
           .select()
           .from(accounts)
-          .where(eq(accounts.providerAccountId, String(account.providerAccountId)))
+          .where(
+            and(
+              eq(accounts.provider, account.provider),
+              eq(
+                accounts.providerAccountId,
+                String(account.providerAccountId),
+              ),
+            ),
+          )
           .limit(1);
         if (row[0]) {
           token.userId = row[0].userId;

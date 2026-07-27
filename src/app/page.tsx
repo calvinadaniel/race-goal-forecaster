@@ -1,5 +1,4 @@
 import { auth, signIn } from "@/auth";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BrandLogo } from "@/components/BrandLogo";
 import { StravaIcon } from "@/components/StravaIcon";
@@ -96,11 +95,6 @@ export default async function Home({
             Disclaimer: TruePace provides estimates only. It is not
             coaching, medical, or training advice. Always progress training
             safely and consult a professional when needed.
-          </p>
-          <p>
-            <Link href="/privacy" className="underline-offset-4 hover:underline">
-              Privacy Policy
-            </Link>
           </p>
         </footer>
       </div>

@@ -4,11 +4,13 @@ import { useState } from "react";
 import {
   Footprints,
   Gauge,
+  LogOut,
   Medal,
   RefreshCw,
   Timer,
   Trophy,
 } from "lucide-react";
+import { logOut } from "@/app/actions/auth";
 import { AppShell } from "@/components/AppShell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -72,19 +74,31 @@ export default function ProfilePage() {
   return (
     <AppShell
       headerAction={
-        <Button
-          variant="outline"
-          className="landing__btn h-10 rounded-xl font-bold"
-          type="button"
-          onClick={() => {
-            setAvatarFailed(false);
-            void refresh();
-          }}
-          disabled={busy}
-        >
-          <RefreshCw className={cn("size-4", busy && "animate-spin")} />
-          {busy ? "Refreshing…" : "Refresh"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            className="landing__btn h-10 rounded-xl font-bold"
+            type="button"
+            onClick={() => {
+              setAvatarFailed(false);
+              void refresh();
+            }}
+            disabled={busy}
+          >
+            <RefreshCw className={cn("size-4", busy && "animate-spin")} />
+            {busy ? "Refreshing…" : "Refresh"}
+          </Button>
+          <form action={logOut}>
+            <Button
+              variant="outline"
+              className="landing__btn h-10 rounded-xl font-bold"
+              type="submit"
+            >
+              <LogOut className="size-4" />
+              Log out
+            </Button>
+          </form>
+        </div>
       }
     >
       <main className="container app-page">
@@ -141,7 +155,7 @@ export default function ProfilePage() {
                 <span className="text-xs font-semibold uppercase tracking-wide">Strava races</span>
               </div>
               <p className="muted m-0 text-sm">
-                Marked as race in Strava (not “wins” — we don’t have place data)
+                Marked as race in Strava (not &quot;wins&quot; — we don&apos;t have place data)
               </p>
             </CardContent>
           </SurfaceCard>

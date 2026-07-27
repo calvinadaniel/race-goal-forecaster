@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { accounts, users } from "@/db/schema";
 import {
@@ -17,7 +17,7 @@ export async function refreshStravaProfile(userId: string): Promise<{
   const [account] = await db
     .select()
     .from(accounts)
-    .where(eq(accounts.userId, userId))
+    .where(and(eq(accounts.userId, userId), eq(accounts.provider, "strava")))
     .limit(1);
 
   if (!account) {
@@ -41,7 +41,7 @@ export async function refreshStravaProfile(userId: string): Promise<{
         refresh_token: token.refreshToken,
         expires_at: token.expiresAt,
       })
-      .where(eq(accounts.userId, userId));
+      .where(and(eq(accounts.userId, userId), eq(accounts.provider, "strava")));
   }
 
   const athlete = await fetchStravaAthlete(token.accessToken);
