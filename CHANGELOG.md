@@ -10,7 +10,7 @@ Renamed the product to **TruePace** in the app UI.
 
 ### Brand
 
-- Wordmark is now **True****Pace** (signal red on Pace)
+- Wordmark is now **TruePace** (signal red on *Pace*)
 - Landing kicker: **See if you’ll hit your goal time**
 - Document title / disclaimer updated to TruePace
 - GitHub repo and Vercel URL unchanged for this pass
