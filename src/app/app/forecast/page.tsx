@@ -147,8 +147,8 @@ export default function ForecastPage() {
                   <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em]">
                     {forecast.fitness.recentForm &&
                     forecast.fitness.recentForm.ageDays > 90
-                      ? "Best in 12 months"
-                      : "Recent form (90d)"}
+                      ? "Best race/workout (12 mo)"
+                      : "Recent form (races/workouts)"}
                   </CardDescription>
                   <CardTitle className="mono text-2xl font-medium">
                     {forecast.fitness.recentForm
@@ -160,7 +160,7 @@ export default function ForecastPage() {
                   <p className="muted m-0 text-sm">
                     {forecast.fitness.recentForm
                       ? `${forecast.fitness.recentForm.label} · ${forecast.fitness.recentForm.date}`
-                      : "No quality effort in last 90 days"}
+                      : "No race or workout tagged in last 90 days"}
                   </p>
                 </CardContent>
               </SurfaceCard>

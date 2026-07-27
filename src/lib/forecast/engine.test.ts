@@ -158,26 +158,26 @@ describe("computeForecast", () => {
           distanceM: 42195,
           movingTimeSec: aprilMarathonSec,
           isRace: true,
+          workoutType: 1,
         },
         {
           id: "slow-10k",
           name: "Easy 10K",
           startDate: new Date("2026-07-01T12:00:00Z"),
           distanceM: 10000,
-          movingTimeSec: 3600, // 60:00 → slow marathon equivalent
+          movingTimeSec: 3600, // easy default run — volume only
           isRace: false,
+          workoutType: null,
         },
       ],
       weeklyMiles: weeks,
     });
     expect(result.needsBaseline).toBe(false);
     expect(result.fitness.pr?.id).toBe("april-m");
-    expect(result.fitness.recentForm?.id).toBe("slow-10k");
-    expect(result.fitness.divergence).toBe("form_behind");
-    expect(result.fitness.prWeight).toBeGreaterThan(0.6);
-    // Blended stays near the PR, not the slow 10K proxy (~4:33)
-    expect(result.currentEquivalentSec).toBeLessThan(aprilMarathonSec + 8 * 60);
-    expect(result.currentEquivalentSec).toBeGreaterThan(aprilMarathonSec - 30);
+    // Easy 10K must not enter recent form
+    expect(result.fitness.recentForm).toBeNull();
+    expect(result.fitness.divergence).toBe("pr_only");
+    expect(result.currentEquivalentSec).toBe(aprilMarathonSec);
     expect(result.predictedTimeSec).toBeLessThan(4 * 3600 + 14 * 60);
   });
 
@@ -204,6 +204,7 @@ describe("computeForecast", () => {
           distanceM: 21097.5,
           movingTimeSec: halfSec,
           isRace: true,
+          workoutType: 1,
         },
       ],
       weeklyMiles: weeks,
@@ -240,6 +241,7 @@ describe("computeForecast", () => {
           distanceM: 42195,
           movingTimeSec: stalePr,
           isRace: true,
+          workoutType: 1,
         },
         {
           id: "recent-m",
@@ -248,6 +250,7 @@ describe("computeForecast", () => {
           distanceM: 42195,
           movingTimeSec: recentSlow,
           isRace: true,
+          workoutType: 1,
         },
       ],
       weeklyMiles: weeks,
@@ -258,5 +261,50 @@ describe("computeForecast", () => {
       (stalePr + recentSlow) / 2 - 60,
     );
     expect(result.fitness.recentForm?.id).toBe("recent-m");
+  });
+
+  it("uses marked workouts for fitness but ignores easy default runs", () => {
+    const asOf = new Date("2026-07-27T12:00:00Z");
+    const raceDate = new Date("2026-11-01T12:00:00Z");
+    const weeks = Array.from({ length: 12 }, (_, i) => ({
+      weekStart: `2026-0${Math.min(i + 1, 9)}-01`,
+      miles: 40,
+    }));
+    const workoutSec = 22 * 60; // hard 5K workout
+    const easySec = 35 * 60; // easy 5K
+    const result = computeForecast({
+      goalDistanceKey: "marathon",
+      goalDistanceM: 42195,
+      targetTimeSec: 4 * 3600,
+      raceDate,
+      intensity: "balanced",
+      asOf,
+      efforts: [
+        {
+          id: "easy-5k",
+          name: "Easy 5K",
+          startDate: new Date("2026-07-20T12:00:00Z"),
+          distanceM: 5000,
+          movingTimeSec: easySec,
+          isRace: false,
+          workoutType: 0,
+        },
+        {
+          id: "tempo-5k",
+          name: "Tempo 5K",
+          startDate: new Date("2026-07-10T12:00:00Z"),
+          distanceM: 5000,
+          movingTimeSec: workoutSec,
+          isRace: false,
+          workoutType: 3,
+        },
+      ],
+      weeklyMiles: weeks,
+    });
+    expect(result.fitness.recentForm?.id).toBe("tempo-5k");
+    expect(result.effortsUsed.every((e) => e.id !== "easy-5k")).toBe(true);
+    expect(result.currentEquivalentSec).toBe(
+      riegelEquivalentTime(workoutSec, 5000, 42195),
+    );
   });
 });

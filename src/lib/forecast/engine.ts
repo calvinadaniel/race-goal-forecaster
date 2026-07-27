@@ -14,6 +14,8 @@ export type EffortInput = {
   distanceM: number;
   movingTimeSec: number;
   isRace: boolean;
+  /** Strava workout_type: 1=race, 2=long, 3=workout; null/0 = default easy run. */
+  workoutType?: number | null;
 };
 
 export type ManualBaseline = {
@@ -135,6 +137,16 @@ function volumeFactor(weeklyMiles: { miles: number }[]): number {
   return Math.min(1.15, Math.max(0.7, volumeScore * (0.7 + 0.3 * consistency)));
 }
 
+/** Fitness uses races + marked workouts only; easy/default runs feed volume, not Riegel. */
+export function isFitnessQualityEffort(e: {
+  isRace: boolean;
+  workoutType?: number | null;
+}): boolean {
+  if (e.isRace) return true;
+  // Strava: 3 = Workout (tempo/intervals/etc.). Long runs (2) stay volume-only.
+  return e.workoutType === 3;
+}
+
 function isGoalDistanceEffort(distanceM: number, goalDistanceM: number): boolean {
   return Math.abs(distanceM - goalDistanceM) / goalDistanceM <= 0.04;
 }
@@ -202,6 +214,7 @@ function scoreEfforts(
   }
 
   for (const e of efforts) {
+    if (!isFitnessQualityEffort(e)) continue;
     const key = nearestDistanceKey(e.distanceM);
     if (!key && !e.isRace) continue;
     const fromM = key ? DISTANCES[key].meters : e.distanceM;
@@ -378,14 +391,16 @@ export function hasMinimumHistory(
   const missing: string[] = [];
   const weeks = weeklyMiles.filter((w) => w.miles > 0).length;
   const quality =
-    efforts.filter((e) => e.isRace || nearestDistanceKey(e.distanceM)).length +
+    efforts.filter((e) => isFitnessQualityEffort(e)).length +
     (manualBaseline ? 1 : 0);
 
   if (weeks < 8 && !manualBaseline) {
     missing.push("At least 8 weeks of running history (or a manual baseline race)");
   }
   if (quality < 1) {
-    missing.push("At least one quality effort near 5K–marathon, or a manual baseline");
+    missing.push(
+      "At least one race or marked workout (or a manual baseline) — easy runs count for volume only",
+    );
   }
   return { ok: missing.length === 0, missing };
 }
@@ -587,7 +602,7 @@ function buildFitnessWhy(
   }
   if (fitness.recentForm) {
     why.push(
-      `Recent form (90d): ${fitness.recentForm.label} (${fitness.recentForm.date}) → ~${formatRough(fitness.recentForm.equivalentSec)}.`,
+      `Recent form (90d races/workouts): ${fitness.recentForm.label} (${fitness.recentForm.date}) → ~${formatRough(fitness.recentForm.equivalentSec)}.`,
     );
   }
 

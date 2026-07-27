@@ -39,6 +39,7 @@ export async function GET() {
     distanceM: r.distanceM,
     movingTimeSec: r.movingTimeSec,
     isRace: r.isRace,
+    workoutType: r.workoutType,
   }));
 
   const weeklyMiles = weeklyVolumeFromActivities(
