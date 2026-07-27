@@ -19,9 +19,9 @@
   --border: rgba(242, 241, 238, 0.14);
   --danger: #ff7a72;
   --warn: #dca045;
-  /* Defined on :root after next/font vars are on <html> (same element) */
-  --type-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --type-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  /* Atlas System: Source Serif 4 (display) + Source Sans 3 (UI) + Plex Mono */
+  --type-display: var(--font-display), "Source Serif 4", ui-serif, Georgia, serif;
+  --type-sans: var(--font-sans-body), "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
   --type-mono: var(--font-plex-mono), ui-monospace, monospace;
 
   --background: #131417;
@@ -63,9 +63,9 @@
   --color-muted: var(--text-muted);
   --color-accent: var(--accent);
   --color-pine: var(--pine);
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --font-heading: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Source Serif 4", ui-serif, Georgia, serif;
   --font-family-display: var(--type-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -181,9 +181,9 @@ a {
 
 .display {
   font-family: var(--type-display);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1.03;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
   font-optical-sizing: auto;
 }
 

@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, IBM_Plex_Mono, Manrope } from "next/font/google";
+import { IBM_Plex_Mono, Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
-const bricolage = Bricolage_Grotesque({
+const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
-  variable: "--font-bricolage",
+  variable: "--font-display",
 });
 
-const manrope = Manrope({
+const sourceSans = Source_Sans_3({
   subsets: ["latin"],
-  variable: "--font-manrope",
+  variable: "--font-sans-body",
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -35,14 +35,14 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn(
-        bricolage.variable,
-        manrope.variable,
+        sourceSerif.variable,
+        sourceSans.variable,
         plexMono.variable,
         "font-sans",
         "dark",
       )}
     >
-      <body className={manrope.className}>
+      <body className={sourceSans.className}>
         <Providers>{children}</Providers>
       </body>
     </html>
