@@ -134,4 +134,129 @@ describe("computeForecast", () => {
     expect(mid).toBeGreaterThan(miles[0]);
     expect(last).toBeLessThan(mid);
   });
+
+  it("keeps a goal-distance PR even when older than 90 days", () => {
+    const asOf = new Date("2026-07-27T12:00:00Z");
+    const raceDate = new Date("2026-11-01T12:00:00Z");
+    const weeks = Array.from({ length: 12 }, (_, i) => ({
+      weekStart: `2026-0${Math.min(i + 1, 9)}-01`,
+      miles: 35,
+    }));
+    const aprilMarathonSec = 3 * 3600 + 54 * 60 + 23; // 3:54:23
+    const result = computeForecast({
+      goalDistanceKey: "marathon",
+      goalDistanceM: 42195,
+      targetTimeSec: 3 * 3600 + 50 * 60, // 3:50 goal
+      raceDate,
+      intensity: "balanced",
+      asOf,
+      efforts: [
+        {
+          id: "april-m",
+          name: "April Marathon",
+          startDate: new Date("2026-04-15T12:00:00Z"),
+          distanceM: 42195,
+          movingTimeSec: aprilMarathonSec,
+          isRace: true,
+        },
+        {
+          id: "slow-10k",
+          name: "Easy 10K",
+          startDate: new Date("2026-07-01T12:00:00Z"),
+          distanceM: 10000,
+          movingTimeSec: 3600, // 60:00 → slow marathon equivalent
+          isRace: false,
+        },
+      ],
+      weeklyMiles: weeks,
+    });
+    expect(result.needsBaseline).toBe(false);
+    expect(result.fitness.pr?.id).toBe("april-m");
+    expect(result.fitness.recentForm?.id).toBe("slow-10k");
+    expect(result.fitness.divergence).toBe("form_behind");
+    expect(result.fitness.prWeight).toBeGreaterThan(0.6);
+    // Blended stays near the PR, not the slow 10K proxy (~4:33)
+    expect(result.currentEquivalentSec).toBeLessThan(aprilMarathonSec + 8 * 60);
+    expect(result.currentEquivalentSec).toBeGreaterThan(aprilMarathonSec - 30);
+    expect(result.predictedTimeSec).toBeLessThan(4 * 3600 + 14 * 60);
+  });
+
+  it("includes quality efforts from within 12 months", () => {
+    const asOf = new Date("2026-07-27T12:00:00Z");
+    const raceDate = new Date("2026-11-01T12:00:00Z");
+    const weeks = Array.from({ length: 12 }, (_, i) => ({
+      weekStart: `2026-0${Math.min(i + 1, 9)}-01`,
+      miles: 30,
+    }));
+    const halfSec = 1 * 3600 + 40 * 60; // 1:40 half
+    const result = computeForecast({
+      goalDistanceKey: "marathon",
+      goalDistanceM: 42195,
+      targetTimeSec: 4 * 3600,
+      raceDate,
+      intensity: "balanced",
+      asOf,
+      efforts: [
+        {
+          id: "old-half",
+          name: "Autumn Half",
+          startDate: new Date("2025-09-01T12:00:00Z"), // ~11 months before asOf
+          distanceM: 21097.5,
+          movingTimeSec: halfSec,
+          isRace: true,
+        },
+      ],
+      weeklyMiles: weeks,
+    });
+    expect(result.effortsUsed.some((e) => e.id === "old-half")).toBe(true);
+    // 11 months old half: outside 90d, not goal-distance PR → year fallback as form_only
+    expect(result.fitness.divergence).toBe("form_only");
+    expect(result.currentEquivalentSec).toBe(
+      riegelEquivalentTime(halfSec, 21097.5, 42195),
+    );
+  });
+
+  it("weights a recent goal-distance race over a stale PR", () => {
+    const asOf = new Date("2026-07-27T12:00:00Z");
+    const raceDate = new Date("2026-11-01T12:00:00Z");
+    const weeks = Array.from({ length: 12 }, (_, i) => ({
+      weekStart: `2026-0${Math.min(i + 1, 9)}-01`,
+      miles: 28,
+    }));
+    const stalePr = 3 * 3600 + 40 * 60; // 3:40
+    const recentSlow = 4 * 3600 + 10 * 60; // 4:10
+    const result = computeForecast({
+      goalDistanceKey: "marathon",
+      goalDistanceM: 42195,
+      targetTimeSec: 3 * 3600 + 55 * 60,
+      raceDate,
+      intensity: "balanced",
+      asOf,
+      efforts: [
+        {
+          id: "old-pr",
+          name: "Old PR",
+          startDate: new Date("2025-01-15T12:00:00Z"), // ~18 months
+          distanceM: 42195,
+          movingTimeSec: stalePr,
+          isRace: true,
+        },
+        {
+          id: "recent-m",
+          name: "Comeback Marathon",
+          startDate: new Date("2026-06-01T12:00:00Z"),
+          distanceM: 42195,
+          movingTimeSec: recentSlow,
+          isRace: true,
+        },
+      ],
+      weeklyMiles: weeks,
+    });
+    expect(result.fitness.divergence).toBe("form_behind");
+    expect(result.fitness.prWeight).toBeLessThan(0.5);
+    expect(result.currentEquivalentSec).toBeGreaterThan(
+      (stalePr + recentSlow) / 2 - 60,
+    );
+    expect(result.fitness.recentForm?.id).toBe("recent-m");
+  });
 });

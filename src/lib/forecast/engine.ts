@@ -53,6 +53,8 @@ export type ForecastResult = {
   confidence: "high" | "medium" | "low";
   monthsToRace: number;
   volumeFactor: number;
+  /** Dual fitness: goal-distance PR vs last-90-day form, blended for projection. */
+  fitness: FitnessBreakdown;
   effortsUsed: {
     id: string;
     label: string;
@@ -79,6 +81,37 @@ export type ForecastResult = {
   missing: string[];
 };
 
+export type FitnessSignal = {
+  id: string;
+  label: string;
+  date: string;
+  distanceKey: DistanceKey | "manual";
+  timeSec: number;
+  equivalentSec: number;
+  ageDays: number;
+  isGoalDistance: boolean;
+};
+
+export type FitnessDivergence =
+  | "aligned"
+  | "form_behind"
+  | "form_ahead"
+  | "pr_only"
+  | "form_only";
+
+export type FitnessBreakdown = {
+  pr: FitnessSignal | null;
+  recentForm: FitnessSignal | null;
+  /** Weight on PR in the blend (0–1). */
+  prWeight: number;
+  blendedSec: number;
+  formGapSec: number | null;
+  divergence: FitnessDivergence;
+};
+
+const RECENT_FORM_DAYS = 90;
+const FITNESS_YEAR_DAYS = 365;
+
 function monthsBetween(from: Date, to: Date): number {
   const ms = to.getTime() - from.getTime();
   return Math.max(0, ms / (1000 * 60 * 60 * 24 * 30.4375));
@@ -102,24 +135,49 @@ function volumeFactor(weeklyMiles: { miles: number }[]): number {
   return Math.min(1.15, Math.max(0.7, volumeScore * (0.7 + 0.3 * consistency)));
 }
 
-function collectEfforts(
+function isGoalDistanceEffort(distanceM: number, goalDistanceM: number): boolean {
+  return Math.abs(distanceM - goalDistanceM) / goalDistanceM <= 0.04;
+}
+
+function daysBetween(from: Date, to: Date): number {
+  return Math.max(0, (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, n));
+}
+
+type ScoredEffort = {
+  id: string;
+  label: string;
+  date: string;
+  distanceKey: DistanceKey | "manual";
+  timeSec: number;
+  equivalentSec: number;
+  startDate: Date;
+  isGoalDistance: boolean;
+  isManual: boolean;
+};
+
+function toFitnessSignal(e: ScoredEffort, asOf: Date): FitnessSignal {
+  return {
+    id: e.id,
+    label: e.label,
+    date: e.date,
+    distanceKey: e.distanceKey,
+    timeSec: e.timeSec,
+    equivalentSec: e.equivalentSec,
+    ageDays: Math.round(daysBetween(e.startDate, asOf)),
+    isGoalDistance: e.isGoalDistance,
+  };
+}
+
+function scoreEfforts(
   efforts: EffortInput[],
   goalDistanceM: number,
-  asOf: Date,
   manualBaseline?: ManualBaseline | null,
-) {
-  const windowStart = new Date(asOf);
-  windowStart.setDate(windowStart.getDate() - 90);
-
-  const scored: {
-    id: string;
-    label: string;
-    date: string;
-    distanceKey: DistanceKey | "manual";
-    timeSec: number;
-    equivalentSec: number;
-    startDate: Date;
-  }[] = [];
+): ScoredEffort[] {
+  const scored: ScoredEffort[] = [];
 
   if (manualBaseline) {
     const d = DISTANCES[manualBaseline.distanceKey];
@@ -135,6 +193,11 @@ function collectEfforts(
         goalDistanceM,
       ),
       startDate: new Date(manualBaseline.date),
+      isGoalDistance: isGoalDistanceEffort(
+        manualBaseline.distanceM,
+        goalDistanceM,
+      ),
+      isManual: true,
     });
   }
 
@@ -156,13 +219,155 @@ function collectEfforts(
       timeSec: e.movingTimeSec,
       equivalentSec,
       startDate: e.startDate,
+      isGoalDistance: isGoalDistanceEffort(e.distanceM, goalDistanceM),
+      isManual: false,
     });
   }
 
-  const recent = scored.filter((s) => s.startDate >= windowStart);
-  const pool = recent.length >= 1 ? recent : scored;
-  pool.sort((a, b) => a.equivalentSec - b.equivalentSec);
-  return pool.slice(0, 3);
+  return scored;
+}
+
+/**
+ * Dual fitness:
+ * - PR = best goal-distance effort (any age) / goal-distance manual baseline
+ * - Recent form = best equivalent in last 90 days (12-month pool still informs display)
+ * Blend favors goal-distance PR over short-race proxies; trusts recent goal-distance
+ * races more when the PR is stale.
+ */
+export function assessFitness(
+  efforts: EffortInput[],
+  goalDistanceM: number,
+  asOf: Date,
+  vol: number,
+  manualBaseline?: ManualBaseline | null,
+): {
+  fitness: FitnessBreakdown;
+  effortsUsed: ScoredEffort[];
+} {
+  const scored = scoreEfforts(efforts, goalDistanceM, manualBaseline);
+  const yearStart = new Date(asOf);
+  yearStart.setFullYear(yearStart.getFullYear() - 1);
+  const recentStart = new Date(asOf);
+  recentStart.setDate(recentStart.getDate() - RECENT_FORM_DAYS);
+
+  const prEffort = scored
+    .filter((s) => s.isGoalDistance)
+    .sort((a, b) => a.timeSec - b.timeSec)[0];
+
+  const recentEffort = scored
+    .filter((s) => s.startDate >= recentStart)
+    .sort((a, b) => a.equivalentSec - b.equivalentSec)[0];
+
+  // If nothing in 90d and no goal-distance PR, fall back to best effort in 12 months.
+  const yearBest =
+    !prEffort && !recentEffort
+      ? scored
+          .filter((s) => s.startDate >= yearStart || s.isManual)
+          .sort((a, b) => a.equivalentSec - b.equivalentSec)[0]
+      : undefined;
+
+  const fitness = blendFitnessSignals(
+    prEffort ?? null,
+    recentEffort ?? yearBest ?? null,
+    asOf,
+    vol,
+  );
+
+  const byId = new Map<string, ScoredEffort>();
+  for (const s of scored.filter((x) => x.startDate >= yearStart)) {
+    byId.set(s.id, s);
+  }
+  if (prEffort) byId.set(prEffort.id, prEffort);
+  if (recentEffort) byId.set(recentEffort.id, recentEffort);
+  for (const s of scored) {
+    if (s.isManual) byId.set(s.id, s);
+  }
+  const effortsUsed = [...byId.values()]
+    .sort((a, b) => a.equivalentSec - b.equivalentSec)
+    .slice(0, 3);
+
+  return { fitness, effortsUsed };
+}
+
+function blendFitnessSignals(
+  prEffort: ScoredEffort | null,
+  recentEffort: ScoredEffort | null,
+  asOf: Date,
+  vol: number,
+): FitnessBreakdown {
+  const pr = prEffort ? toFitnessSignal(prEffort, asOf) : null;
+  const recentForm = recentEffort ? toFitnessSignal(recentEffort, asOf) : null;
+
+  if (!pr && !recentForm) {
+    return {
+      pr: null,
+      recentForm: null,
+      prWeight: 0,
+      blendedSec: 0,
+      formGapSec: null,
+      divergence: "form_only",
+    };
+  }
+
+  if (!pr && recentForm) {
+    return {
+      pr: null,
+      recentForm,
+      prWeight: 0,
+      blendedSec: recentForm.equivalentSec,
+      formGapSec: null,
+      divergence: "form_only",
+    };
+  }
+
+  if (pr && !recentForm) {
+    return {
+      pr,
+      recentForm: null,
+      prWeight: 1,
+      blendedSec: pr.equivalentSec,
+      formGapSec: null,
+      divergence: "pr_only",
+    };
+  }
+
+  // Both present (narrowed by guards above)
+  const prSec = pr!.equivalentSec;
+  const formSec = recentForm!.equivalentSec;
+  const formGapSec = formSec - prSec;
+  const prFreshness = clamp(1 - pr!.ageDays / FITNESS_YEAR_DAYS, 0.2, 1);
+
+  if (formSec <= prSec * 1.02) {
+    const usePr = prSec <= formSec;
+    return {
+      pr,
+      recentForm,
+      prWeight: usePr ? 1 : 0,
+      blendedSec: Math.min(prSec, formSec),
+      formGapSec,
+      divergence: formSec < prSec * 0.98 ? "form_ahead" : "aligned",
+    };
+  }
+
+  // Form behind PR: short-race proxies keep PR primary; recent goal-distance races pull harder when PR is old.
+  let prWeight = recentForm!.isGoalDistance
+    ? prFreshness * 0.45
+    : 0.65 + 0.3 * prFreshness;
+
+  if (vol < 0.85 && pr!.ageDays > 120) {
+    prWeight *= 0.85;
+  }
+  prWeight = clamp(prWeight, 0.15, 0.95);
+
+  const blendedSec = prWeight * prSec + (1 - prWeight) * formSec;
+  return {
+    pr,
+    recentForm,
+    prWeight,
+    blendedSec,
+    formGapSec,
+    divergence: "form_behind",
+  };
 }
 
 export function hasMinimumHistory(
@@ -222,6 +427,14 @@ export function computeForecast(input: ForecastInput): ForecastResult {
       confidence: "low",
       monthsToRace,
       volumeFactor: vol,
+      fitness: {
+        pr: null,
+        recentForm: null,
+        prWeight: 0,
+        blendedSec: input.targetTimeSec,
+        formGapSec: null,
+        divergence: "form_only",
+      },
       effortsUsed: [],
       why: ["Not enough history to forecast yet."],
       tips: [
@@ -239,14 +452,16 @@ export function computeForecast(input: ForecastInput): ForecastResult {
     };
   }
 
-  const used = collectEfforts(
+  const vol = volumeFactor(input.weeklyMiles);
+  const { fitness, effortsUsed: used } = assessFitness(
     input.efforts,
     input.goalDistanceM,
     asOf,
+    vol,
     input.manualBaseline,
   );
-  const currentEquivalentSec = used[0]?.equivalentSec ?? input.targetTimeSec;
-  const vol = volumeFactor(input.weeklyMiles);
+  const currentEquivalentSec =
+    fitness.blendedSec > 0 ? fitness.blendedSec : input.targetTimeSec;
   const monthsToRace = monthsBetween(asOf, input.raceDate);
   const intensities: Intensity[] = ["conservative", "balanced", "aggressive"];
 
@@ -273,16 +488,7 @@ export function computeForecast(input: ForecastInput): ForecastResult {
   const confidence: ForecastResult["confidence"] =
     used.length >= 2 && vol >= 0.9 ? "high" : used.length >= 1 ? "medium" : "low";
 
-  const why = [
-    `Fitness from ${used[0]?.label ?? "baseline"} (${used[0]?.date}) → ~${formatRough(
-      currentEquivalentSec,
-    )} at goal distance.`,
-    `Volume factor ${vol.toFixed(2)} from recent weekly mileage/consistency.`,
-    `${POSTURE_LABELS[input.intensity]} posture closes ~${(
-      POSTURE_MONTHLY_GAP_CLOSE[input.intensity] * 100
-    ).toFixed(0)}% of the gap per month (adjusted by volume).`,
-    `${monthsToRace.toFixed(1)} months until race day.`,
-  ];
+  const why = buildFitnessWhy(fitness, currentEquivalentSec, input.intensity, vol, monthsToRace);
 
   const recentWeeklyMiles = avgRecentMiles(input.weeklyMiles);
   const tips = buildTips({
@@ -295,6 +501,7 @@ export function computeForecast(input: ForecastInput): ForecastResult {
     volumeFactor: vol,
     recentWeeklyMiles,
     scenarios,
+    fitness,
   });
 
   return {
@@ -305,6 +512,7 @@ export function computeForecast(input: ForecastInput): ForecastResult {
     confidence,
     monthsToRace,
     volumeFactor: vol,
+    fitness,
     effortsUsed: used.map((item) => ({
       id: item.id,
       label: item.label,
@@ -363,6 +571,50 @@ function buildKpis(
   };
 }
 
+function buildFitnessWhy(
+  fitness: FitnessBreakdown,
+  blendedSec: number,
+  intensity: Intensity,
+  vol: number,
+  monthsToRace: number,
+): string[] {
+  const why: string[] = [];
+
+  if (fitness.pr) {
+    why.push(
+      `Goal-distance PR: ${fitness.pr.label} (${fitness.pr.date}) → ~${formatRough(fitness.pr.equivalentSec)}.`,
+    );
+  }
+  if (fitness.recentForm) {
+    why.push(
+      `Recent form (90d): ${fitness.recentForm.label} (${fitness.recentForm.date}) → ~${formatRough(fitness.recentForm.equivalentSec)}.`,
+    );
+  }
+
+  if (fitness.divergence === "form_behind" && fitness.pr && fitness.recentForm) {
+    why.push(
+      `Blended fitness ~${formatRough(blendedSec)} (${Math.round(fitness.prWeight * 100)}% PR / ${Math.round((1 - fitness.prWeight) * 100)}% recent) — recent form trails the PR.`,
+    );
+  } else if (fitness.divergence === "form_ahead") {
+    why.push(
+      `Blended fitness ~${formatRough(blendedSec)} — recent form is ahead of the PR.`,
+    );
+  } else {
+    why.push(`Blended fitness used for projection: ~${formatRough(blendedSec)} at goal distance.`);
+  }
+
+  why.push(
+    `Volume factor ${vol.toFixed(2)} from recent weekly mileage/consistency.`,
+  );
+  why.push(
+    `${POSTURE_LABELS[intensity]} posture closes ~${(
+      POSTURE_MONTHLY_GAP_CLOSE[intensity] * 100
+    ).toFixed(0)}% of the gap per month (adjusted by volume).`,
+  );
+  why.push(`${monthsToRace.toFixed(1)} months until race day.`);
+  return why;
+}
+
 function buildTips(args: {
   verdict: Verdict;
   intensity: Intensity;
@@ -373,10 +625,21 @@ function buildTips(args: {
   volumeFactor: number;
   recentWeeklyMiles: number;
   scenarios: ScenarioResult[];
+  fitness?: FitnessBreakdown;
 }): string[] {
   const tips: string[] = [];
   const gapSec = args.predictedTimeSec - args.targetTimeSec;
   const fitnessGap = args.currentEquivalentSec - args.targetTimeSec;
+
+  if (
+    args.fitness?.divergence === "form_behind" &&
+    args.fitness.formGapSec &&
+    args.fitness.formGapSec > 5 * 60
+  ) {
+    tips.push(
+      `Recent form sits ~${formatRough(args.fitness.formGapSec)} behind your goal-distance PR — a tune-up race or race-pace long run would re-anchor the forecast.`,
+    );
+  }
 
   if (args.verdict === "on_track") {
     tips.push(

@@ -17,6 +17,33 @@ export type ForecastPayload = {
     targetTimeSec: number;
     currentEquivalentSec: number;
     confidence: string;
+    fitness?: {
+      pr: {
+        id: string;
+        label: string;
+        date: string;
+        equivalentSec: number;
+        ageDays: number;
+        isGoalDistance: boolean;
+      } | null;
+      recentForm: {
+        id: string;
+        label: string;
+        date: string;
+        equivalentSec: number;
+        ageDays: number;
+        isGoalDistance: boolean;
+      } | null;
+      prWeight: number;
+      blendedSec: number;
+      formGapSec: number | null;
+      divergence:
+        | "aligned"
+        | "form_behind"
+        | "form_ahead"
+        | "pr_only"
+        | "form_only";
+    };
     why: string[];
     tips: string[];
     trainingPlan: {

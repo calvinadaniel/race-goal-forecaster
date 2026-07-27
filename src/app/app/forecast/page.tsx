@@ -115,9 +115,71 @@ export default function ForecastPage() {
           <span className="muted"> vs goal {formatDuration(forecast.targetTimeSec)}</span>
         </p>
         <p className="muted max-w-xl leading-relaxed">
-          Current equivalent ≈ {formatDuration(forecast.currentEquivalentSec)} at {distLabel}.
+          Blended fitness ≈ {formatDuration(forecast.currentEquivalentSec)} at {distLabel}.
           Confidence: {forecast.confidence}.
         </p>
+
+        {forecast.fitness &&
+          (forecast.fitness.pr || forecast.fitness.recentForm) &&
+          !forecast.needsBaseline && (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 max-w-2xl">
+              <SurfaceCard className="gap-1 py-3" interactive={false}>
+                <CardHeader className="px-4 pb-0 pt-0">
+                  <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em]">
+                    Goal-distance PR
+                  </CardDescription>
+                  <CardTitle className="mono text-2xl font-medium">
+                    {forecast.fitness.pr
+                      ? formatDuration(forecast.fitness.pr.equivalentSec)
+                      : "—"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 pt-1 pb-0">
+                  <p className="muted m-0 text-sm">
+                    {forecast.fitness.pr
+                      ? `${forecast.fitness.pr.label} · ${forecast.fitness.pr.date} · ${forecast.fitness.pr.ageDays}d ago`
+                      : "No goal-distance race yet"}
+                  </p>
+                </CardContent>
+              </SurfaceCard>
+              <SurfaceCard className="gap-1 py-3" interactive={false}>
+                <CardHeader className="px-4 pb-0 pt-0">
+                  <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em]">
+                    {forecast.fitness.recentForm &&
+                    forecast.fitness.recentForm.ageDays > 90
+                      ? "Best in 12 months"
+                      : "Recent form (90d)"}
+                  </CardDescription>
+                  <CardTitle className="mono text-2xl font-medium">
+                    {forecast.fitness.recentForm
+                      ? formatDuration(forecast.fitness.recentForm.equivalentSec)
+                      : "—"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 pt-1 pb-0">
+                  <p className="muted m-0 text-sm">
+                    {forecast.fitness.recentForm
+                      ? `${forecast.fitness.recentForm.label} · ${forecast.fitness.recentForm.date}`
+                      : "No quality effort in last 90 days"}
+                  </p>
+                </CardContent>
+              </SurfaceCard>
+            </div>
+          )}
+
+        {forecast.fitness?.divergence === "form_behind" &&
+          forecast.fitness.pr &&
+          forecast.fitness.recentForm &&
+          !forecast.needsBaseline && (
+            <p className="muted mt-3 max-w-2xl text-sm leading-relaxed">
+              Projection blends {Math.round(forecast.fitness.prWeight * 100)}% PR /{" "}
+              {Math.round((1 - forecast.fitness.prWeight) * 100)}% recent form
+              {forecast.fitness.formGapSec != null && forecast.fitness.formGapSec > 0
+                ? ` — recent form is ~${formatDuration(forecast.fitness.formGapSec)} behind the PR`
+                : ""}
+              .
+            </p>
+          )}
 
         {!forecast.needsBaseline && (
           <div className="kpi-row mt-6">
