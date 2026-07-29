@@ -77,10 +77,9 @@ No dedicated glossary route.
 
 **Plan regeneration**
 
-- Prefer calling existing `buildTrainingPlan` with the same goal inputs but `intensity: previewIntensity`.
-  - **Option 1 (preferred for beta):** thin API `GET /api/training-plan?intensity=` (auth + load goal + return plan) so client stays thin and logic stays server-side with forecast.
-  - **Option 2:** export `buildTrainingPlan` usage from a shared client-safe module if the engine has no Node-only deps (it should be pure TS today).
+- Thin API `GET /api/training-plan?intensity=` (auth + load goal/activities inputs needed by `buildTrainingPlan` + return plan). Keeps the client thin and reuses server-side forecast inputs.
 - Switching the segmented control updates the full calendar (weeks, miles, runs/week, session mix)—does **not** write DB until Apply.
+- Do **not** ship a client-bundled duplicate of the forecast engine for this feature.
 
 **UI (Training)**
 
