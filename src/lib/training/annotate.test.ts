@@ -34,4 +34,9 @@ describe("annotateText", () => {
     const parts = annotateText("interest only");
     expect(parts.every((p) => p.type === "text")).toBe(true);
   });
+
+  it("checks the first character when an alias begins at index one", () => {
+    const parts = annotateText("arest day");
+    expect(parts.every((p) => p.type === "text")).toBe(true);
+  });
 });

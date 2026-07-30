@@ -22,7 +22,7 @@ function buildAliases(): Alias[] {
 const ALIASES = buildAliases();
 
 function isWordBoundary(text: string, index: number): boolean {
-  return index <= 0 || index >= text.length || /[^A-Za-z]/.test(text[index]!);
+  return index < 0 || index >= text.length || /[^A-Za-z]/.test(text[index]!);
 }
 
 export function annotateText(text: string): AnnotatedSegment[] {

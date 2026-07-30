@@ -135,6 +135,7 @@ export default function TrainingPage() {
     } catch {
       setPreviewIntensity(savedIntensity);
       setPreviewPlan(null);
+      setPostureError("Could not load that posture preview. Try again.");
     } finally {
       setPreviewBusy(false);
     }
@@ -206,6 +207,14 @@ export default function TrainingPage() {
           </SurfaceCard>
         ) : (
           <>
+            {postureError ? (
+              <p
+                className="mb-4 text-sm text-destructive"
+                role="alert"
+              >
+                {postureError}
+              </p>
+            ) : null}
             <div
               className="mb-4 flex flex-wrap gap-2"
               role="group"
@@ -236,14 +245,6 @@ export default function TrainingPage() {
                       Previewing {POSTURE_LABELS[previewIntensity]} — not saved
                       yet.
                     </p>
-                    {postureError ? (
-                      <p
-                        className="mt-2 mb-0 text-sm text-destructive"
-                        role="alert"
-                      >
-                        {postureError}
-                      </p>
-                    ) : null}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button

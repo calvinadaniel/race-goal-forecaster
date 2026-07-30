@@ -30,6 +30,10 @@ import { cn } from "@/lib/utils";
 
 const FOCUS_META: Record<string, { label: string; className: string }> = {
   easy: { label: "Easy", className: "bg-secondary text-secondary-foreground" },
+  optional: {
+    label: "Optional",
+    className: "bg-secondary text-secondary-foreground",
+  },
   quality: { label: "Quality", className: "bg-primary text-primary-foreground" },
   long: { label: "Long", className: "bg-[var(--pine)] text-[#fff7ef]" },
   rest: { label: "Rest", className: "bg-muted text-muted-foreground" },

@@ -21,7 +21,7 @@ export function TermHelpSheet({
   const term = termId ? getTerm(termId) : undefined;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="display text-2xl">
             {term?.label ?? "Term"}
