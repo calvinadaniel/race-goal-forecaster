@@ -2,6 +2,21 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.8.0] — 2026-07-30
+
+Training plans explain themselves, and you can preview Conservative / Balanced / Aggressive before applying.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Training
+
+- Tap terms like **strides**, **tempo**, and **quality** (or the focus ⓘ) for a short plain-language definition
+- Switch **Conservative / Balanced / Aggressive** to preview the full plan; **Apply posture** saves it to your goal
+
+### Forecast
+
+- This week’s suggestion cards use the same inline term help
+
 ## [1.7.2] — 2026-07-27
 
 Beta polish: hide Strava-dependent cards until sync is ready; Profile shows Google identity and your race baseline.
@@ -248,6 +263,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.8.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.8.0
 [1.7.2]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.7.2
 [1.7.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.7.1
 [1.7.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.7.0
