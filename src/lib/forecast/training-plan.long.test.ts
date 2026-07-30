@@ -55,3 +55,21 @@ describe("marathon long-run progression", () => {
     expect(Math.max(...buildLongs, 0)).toBeGreaterThanOrEqual(12);
   });
 });
+
+describe("posture intensity", () => {
+  it("aggressive schedules more runs than conservative", () => {
+    const base = {
+      distanceKey: "half" as const,
+      distanceM: 21097.5,
+      targetTimeSec: 7200,
+      verdict: "at_risk" as const,
+      monthsToRace: 4,
+      recentWeeklyMiles: 30,
+      raceDate: new Date("2026-11-01"),
+      asOf: new Date("2026-07-01"),
+    };
+    const c = buildTrainingPlan({ ...base, intensity: "conservative" });
+    const a = buildTrainingPlan({ ...base, intensity: "aggressive" });
+    expect(a.runsPerWeek).toBeGreaterThan(c.runsPerWeek);
+  });
+});
