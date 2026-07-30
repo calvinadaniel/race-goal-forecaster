@@ -14,6 +14,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { PlanDayCard } from "@/components/PlanDayCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -220,26 +221,11 @@ export default function ForecastPage() {
                   {forecast.trainingPlan.days.map((d) => {
                     const focus = FOCUS_META[d.focus] ?? FOCUS_META.easy;
                     return (
-                      <SurfaceCard
+                      <PlanDayCard
                         key={`${d.day}-${d.date ?? d.title}`}
-                        className={cn("plan-day gap-2 py-3", `plan-day--${d.focus}`)}
-                      >
-                        <CardHeader className="gap-2 px-4 pb-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="eyebrow m-0">
-                              {d.day}
-                              {d.date ? ` · ${d.date.slice(5)}` : ""}
-                            </p>
-                            <Badge className={cn("rounded-full", focus.className)}>
-                              {focus.label}
-                            </Badge>
-                          </div>
-                          <CardTitle className="display text-lg">{d.title}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="px-4 pt-0">
-                          <p className="muted m-0 text-sm leading-snug">{d.detail}</p>
-                        </CardContent>
-                      </SurfaceCard>
+                        day={d}
+                        focusMeta={focus}
+                      />
                     );
                   })}
                 </div>
