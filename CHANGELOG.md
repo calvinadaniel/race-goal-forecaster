@@ -2,6 +2,17 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.8.1] — 2026-07-30
+
+Fixes a React hydration warning on Training and Forecast from term-help dialogs.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Training & Forecast
+
+- One shared term-help dialog per page instead of a dialog per annotated phrase
+- Dialog mounts only when open; detail copy uses valid markup around term buttons
+
 ## [1.8.0] — 2026-07-30
 
 Training plans explain themselves, and you can preview Conservative / Balanced / Aggressive before applying.
@@ -263,6 +274,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.8.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.8.1
 [1.8.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.8.0
 [1.7.2]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.7.2
 [1.7.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.7.1
