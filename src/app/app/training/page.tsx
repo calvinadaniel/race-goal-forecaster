@@ -73,10 +73,12 @@ export default function TrainingPage() {
   >(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [applyBusy, setApplyBusy] = useState(false);
+  const [postureError, setPostureError] = useState<string | null>(null);
 
   useEffect(() => {
     setPreviewIntensity(savedIntensity);
     setPreviewPlan(null);
+    setPostureError(null);
   }, [savedIntensity]);
 
   if (error) {
@@ -118,10 +120,12 @@ export default function TrainingPage() {
 
   async function selectIntensity(next: Intensity) {
     setPreviewIntensity(next);
+    setPostureError(null);
     if (next === savedIntensity) {
       setPreviewPlan(null);
       return;
     }
+    setPreviewPlan(null);
     setPreviewBusy(true);
     try {
       const res = await fetch(`/api/training-plan?intensity=${next}`);
@@ -138,6 +142,7 @@ export default function TrainingPage() {
 
   async function applyPosture() {
     setApplyBusy(true);
+    setPostureError(null);
     try {
       const res = await fetch("/api/goal", {
         method: "PUT",
@@ -160,6 +165,10 @@ export default function TrainingPage() {
       if (!res.ok) throw new Error("apply failed");
       await load();
       setPreviewPlan(null);
+    } catch {
+      setPostureError(
+        "Could not apply this training posture. Please try again.",
+      );
     } finally {
       setApplyBusy(false);
     }
@@ -222,10 +231,20 @@ export default function TrainingPage() {
             {previewIntensity !== savedIntensity ? (
               <SurfaceCard className="mb-4 border-primary/40">
                 <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
-                  <p className="m-0 text-sm leading-relaxed">
-                    Previewing {POSTURE_LABELS[previewIntensity]} — not saved
-                    yet.
-                  </p>
+                  <div>
+                    <p className="m-0 text-sm leading-relaxed">
+                      Previewing {POSTURE_LABELS[previewIntensity]} — not saved
+                      yet.
+                    </p>
+                    {postureError ? (
+                      <p
+                        className="mt-2 mb-0 text-sm text-destructive"
+                        role="alert"
+                      >
+                        {postureError}
+                      </p>
+                    ) : null}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
@@ -243,6 +262,7 @@ export default function TrainingPage() {
                       onClick={() => {
                         setPreviewIntensity(savedIntensity);
                         setPreviewPlan(null);
+                        setPostureError(null);
                       }}
                     >
                       Reset
