@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PlanDayCard } from "@/components/PlanDayCard";
+import { TermHelpProvider } from "@/components/TermHelpProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,6 +76,7 @@ export default function ForecastPage() {
     DISTANCES[goal.distanceKey as DistanceKey]?.label ?? goal.distanceKey;
 
   return (
+    <TermHelpProvider>
     <AppShell
       headerAction={
         <Button
@@ -318,5 +320,6 @@ export default function ForecastPage() {
         )}
       </main>
     </AppShell>
+    </TermHelpProvider>
   );
 }

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PlanDayCard } from "@/components/PlanDayCard";
+import { TermHelpProvider } from "@/components/TermHelpProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
@@ -176,6 +177,7 @@ export default function TrainingPage() {
   }
 
   return (
+    <TermHelpProvider>
     <AppShell
       headerAction={
         displayPlan && !data.forecast.needsBaseline && weeks.length > 0 ? (
@@ -337,5 +339,6 @@ export default function TrainingPage() {
         )}
       </main>
     </AppShell>
+    </TermHelpProvider>
   );
 }

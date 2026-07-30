@@ -19,8 +19,12 @@ export function TermHelpSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const term = termId ? getTerm(termId) : undefined;
+  // Avoid mounting Dialog/portal while closed — prevents SSR/client DOM mismatches
+  // when many annotatable strings are on the page.
+  if (!open || !termId) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="display text-2xl">
