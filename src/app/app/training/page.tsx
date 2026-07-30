@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   CalendarRange,
   Download,
@@ -17,7 +18,14 @@ import { CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SectionHeading, SurfaceCard } from "@/components/ui-surface";
 import { downloadTrainingPlanCsv } from "@/lib/export-training-plan";
-import { useForecastData } from "@/lib/use-forecast";
+import {
+  POSTURE_LABELS,
+  type Intensity,
+} from "@/lib/forecast/postures";
+import {
+  type ForecastPayload,
+  useForecastData,
+} from "@/lib/use-forecast";
 
 const FOCUS_META: Record<
   string,
@@ -56,7 +64,20 @@ const FOCUS_META: Record<
 };
 
 export default function TrainingPage() {
-  const { data, error } = useForecastData();
+  const { data, units, error, load } = useForecastData();
+  const savedIntensity = (data?.goal.intensity ?? "balanced") as Intensity;
+  const [previewIntensity, setPreviewIntensity] =
+    useState<Intensity>(savedIntensity);
+  const [previewPlan, setPreviewPlan] = useState<
+    ForecastPayload["forecast"]["trainingPlan"]
+  >(null);
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [applyBusy, setApplyBusy] = useState(false);
+
+  useEffect(() => {
+    setPreviewIntensity(savedIntensity);
+    setPreviewPlan(null);
+  }, [savedIntensity]);
 
   if (error) {
     return (
@@ -80,21 +101,73 @@ export default function TrainingPage() {
     );
   }
 
-  const plan = data.forecast.trainingPlan;
-  const weeks = plan?.weeks ?? [];
+  const displayPlan =
+    previewIntensity !== savedIntensity && previewPlan
+      ? previewPlan
+      : data.forecast.trainingPlan;
+  const weeks = displayPlan?.weeks ?? [];
 
   const exportCsv = () => {
-    if (!plan || weeks.length === 0) return;
+    if (!displayPlan || weeks.length === 0) return;
     downloadTrainingPlanCsv(
       weeks,
-      `training-plan-${plan.startDate ?? "export"}-to-${plan.endDate ?? "race"}.csv`,
+      `training-plan-${displayPlan.startDate ?? "export"}-to-${displayPlan.endDate ?? "race"}.csv`,
     );
   };
+
+  async function selectIntensity(next: Intensity) {
+    setPreviewIntensity(next);
+    if (next === savedIntensity) {
+      setPreviewPlan(null);
+      return;
+    }
+    setPreviewBusy(true);
+    try {
+      const res = await fetch(`/api/training-plan?intensity=${next}`);
+      if (!res.ok) throw new Error("preview failed");
+      const json = await res.json();
+      setPreviewPlan(json.plan);
+    } catch {
+      setPreviewIntensity(savedIntensity);
+      setPreviewPlan(null);
+    } finally {
+      setPreviewBusy(false);
+    }
+  }
+
+  async function applyPosture() {
+    setApplyBusy(true);
+    try {
+      const res = await fetch("/api/goal", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          distanceKey: data.goal.distanceKey,
+          targetTimeSec: data.goal.targetTimeSec,
+          raceDate: data.goal.raceDate,
+          intensity: previewIntensity,
+          manualBaseline: data.goal.manualBaseline
+            ? {
+                distanceKey: data.goal.manualBaseline.distanceKey,
+                timeSec: data.goal.manualBaseline.timeSec,
+                date: data.goal.manualBaseline.date,
+              }
+            : null,
+          units,
+        }),
+      });
+      if (!res.ok) throw new Error("apply failed");
+      await load();
+      setPreviewPlan(null);
+    } finally {
+      setApplyBusy(false);
+    }
+  }
 
   return (
     <AppShell
       headerAction={
-        plan && !data.forecast.needsBaseline && weeks.length > 0 ? (
+        displayPlan && !data.forecast.needsBaseline && weeks.length > 0 ? (
           <Button
             variant="outline"
             className="landing__btn h-10 rounded-xl font-bold"
@@ -113,7 +186,7 @@ export default function TrainingPage() {
           Full plan to race day
         </h1>
 
-        {!plan || data.forecast.needsBaseline ? (
+        {!displayPlan || data.forecast.needsBaseline ? (
           <SurfaceCard>
             <CardContent>
               <p className="m-0">
@@ -123,11 +196,68 @@ export default function TrainingPage() {
           </SurfaceCard>
         ) : (
           <>
+            <div
+              className="mb-4 flex flex-wrap gap-2"
+              role="group"
+              aria-label="Training posture"
+            >
+              {(
+                ["conservative", "balanced", "aggressive"] as Intensity[]
+              ).map((id) => (
+                <Button
+                  key={id}
+                  type="button"
+                  variant={previewIntensity === id ? "default" : "outline"}
+                  className="landing__btn h-10 rounded-xl font-bold"
+                  disabled={previewBusy || applyBusy}
+                  onClick={() => void selectIntensity(id)}
+                >
+                  {POSTURE_LABELS[id]}
+                  {savedIntensity === id ? " · Current" : ""}
+                </Button>
+              ))}
+            </div>
+
+            {previewIntensity !== savedIntensity ? (
+              <SurfaceCard className="mb-4 border-primary/40">
+                <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+                  <p className="m-0 text-sm leading-relaxed">
+                    Previewing {POSTURE_LABELS[previewIntensity]} — not saved
+                    yet.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      className="landing__btn h-10 rounded-xl font-bold"
+                      disabled={applyBusy || previewBusy}
+                      onClick={() => void applyPosture()}
+                    >
+                      {applyBusy ? "Applying…" : "Apply posture"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="landing__btn h-10 rounded-xl font-bold"
+                      disabled={applyBusy}
+                      onClick={() => {
+                        setPreviewIntensity(savedIntensity);
+                        setPreviewPlan(null);
+                      }}
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                </CardContent>
+              </SurfaceCard>
+            ) : null}
+
             <div className="plan-toolbar">
               <p className="muted m-0 max-w-xl leading-relaxed">
-                {plan.startDate} → {plan.endDate} · {weeks.length} week
-                {weeks.length === 1 ? "" : "s"} · goal pace {plan.goalPacePerMi} ·{" "}
-                {plan.runsPerWeek} runs/week pattern
+                {displayPlan.startDate} → {displayPlan.endDate} · {weeks.length}{" "}
+                week
+                {weeks.length === 1 ? "" : "s"} · goal pace{" "}
+                {displayPlan.goalPacePerMi} · {displayPlan.runsPerWeek} runs/week
+                pattern
               </p>
               <Button
                 className="landing__btn h-10 rounded-xl font-bold"
@@ -177,7 +307,7 @@ export default function TrainingPage() {
             </div>
 
             <ul className="muted mt-5 list-disc space-y-1 pl-5 text-sm leading-relaxed">
-              {plan.notes.map((n) => (
+              {displayPlan.notes.map((n) => (
                 <li key={n}>{n}</li>
               ))}
             </ul>
