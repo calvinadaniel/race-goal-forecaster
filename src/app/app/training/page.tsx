@@ -101,6 +101,7 @@ export default function TrainingPage() {
     );
   }
 
+  const goal = data.goal;
   const displayPlan =
     previewIntensity !== savedIntensity && previewPlan
       ? previewPlan
@@ -142,15 +143,15 @@ export default function TrainingPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          distanceKey: data.goal.distanceKey,
-          targetTimeSec: data.goal.targetTimeSec,
-          raceDate: data.goal.raceDate,
+          distanceKey: goal.distanceKey,
+          targetTimeSec: goal.targetTimeSec,
+          raceDate: goal.raceDate,
           intensity: previewIntensity,
-          manualBaseline: data.goal.manualBaseline
+          manualBaseline: goal.manualBaseline
             ? {
-                distanceKey: data.goal.manualBaseline.distanceKey,
-                timeSec: data.goal.manualBaseline.timeSec,
-                date: data.goal.manualBaseline.date,
+                distanceKey: goal.manualBaseline.distanceKey,
+                timeSec: goal.manualBaseline.timeSec,
+                date: goal.manualBaseline.date,
               }
             : null,
           units,
