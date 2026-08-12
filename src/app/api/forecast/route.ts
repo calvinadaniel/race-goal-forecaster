@@ -59,6 +59,7 @@ export async function GET() {
       timeSec: number;
       date: string;
     } | null,
+    planStartMonday: goal.planStartMonday ?? null,
   });
 
   const topEfforts = rows
@@ -109,6 +110,13 @@ export async function GET() {
       targetTimeSec: goal.targetTimeSec,
       raceDate: goal.raceDate.toISOString().slice(0, 10),
       intensity: goal.intensity,
+      planStartMonday: goal.planStartMonday
+        ? [
+            goal.planStartMonday.getFullYear(),
+            String(goal.planStartMonday.getMonth() + 1).padStart(2, "0"),
+            String(goal.planStartMonday.getDate()).padStart(2, "0"),
+          ].join("-")
+        : null,
       manualBaseline: goal.manualBaseline,
     },
     forecast,

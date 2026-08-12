@@ -70,6 +70,7 @@ export async function GET(req: Request) {
       timeSec: number;
       date: string;
     } | null,
+    planStartMonday: goal.planStartMonday ?? null,
   });
 
   if (forecast.needsBaseline || !forecast.trainingPlan) {

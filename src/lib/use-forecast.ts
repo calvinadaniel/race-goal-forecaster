@@ -10,6 +10,7 @@ export type ForecastPayload = {
     targetTimeSec: number;
     raceDate: string;
     intensity: string;
+    planStartMonday?: string | null;
     manualBaseline?: {
       distanceKey: string;
       distanceM: number;
@@ -69,6 +70,9 @@ export type ForecastPayload = {
         days: { day: string; date?: string; focus: string; title: string; detail: string }[];
       }[];
       notes: string[];
+      planStatus?: "draft" | "started";
+      planStartMonday?: string | null;
+      currentWeekIndex?: number;
     } | null;
     kpis: {
       gapSec: number;
