@@ -1,10 +1,15 @@
 import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import Strava from "next-auth/providers/strava";
 import { and, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { getDb } from "@/db";
 import { accounts, users } from "@/db/schema";
+import {
+  ensureDevPreviewUser,
+  isDevPreviewEnabled,
+} from "@/lib/dev-preview";
 import { normalizeAthleteImageUrl } from "@/lib/strava";
 
 export const LINK_STRAVA_COOKIE = "truepace_link_user_id";
@@ -235,11 +240,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       },
     }),
+    ...(isDevPreviewEnabled()
+      ? [
+          Credentials({
+            id: "dev-preview",
+            name: "Dev preview",
+            credentials: {
+              preview: { label: "Preview", type: "text" },
+            },
+            async authorize() {
+              if (!isDevPreviewEnabled()) return null;
+              return ensureDevPreviewUser();
+            },
+          }),
+        ]
+      : []),
   ],
   session: { strategy: "jwt" },
   callbacks: {
-    async signIn({ account, profile }) {
+    async signIn({ account, profile, user }) {
+      // Local Credentials preview — account may be null or id "dev-preview".
+      if (
+        isDevPreviewEnabled() &&
+        user?.id &&
+        (!account || account.provider === "dev-preview")
+      ) {
+        return true;
+      }
+
       if (!account) return false;
+
       if (account.provider !== "google" && account.provider !== "strava") {
         return false;
       }
@@ -264,7 +294,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       (account as { userId?: string }).userId = userId;
       return true;
     },
-    async jwt({ token, account }) {
+    async jwt({ token, account, user }) {
+      if (user?.id) {
+        token.userId = user.id;
+      }
       if (account?.providerAccountId) {
         const db = getDb();
         const row = await db

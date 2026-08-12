@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { signInWithGoogle } from "@/app/actions/auth";
+import { signInAsDevPreview, signInWithGoogle } from "@/app/actions/auth";
 import { BrandLogo } from "@/components/BrandLogo";
 import { GoogleIcon } from "@/components/GoogleIcon";
+import { isDevPreviewEnabled } from "@/lib/dev-preview";
 
 export default async function Home({
   searchParams,
@@ -15,6 +16,8 @@ export default async function Home({
   if (session?.user) {
     redirect(params.callbackUrl || "/app/forecast");
   }
+
+  const showDevPreview = isDevPreviewEnabled();
 
   return (
     <main className="landing">
@@ -45,6 +48,13 @@ export default async function Home({
                 Continue with Google
               </button>
             </form>
+            {showDevPreview ? (
+              <form action={signInAsDevPreview} style={{ marginTop: "0.75rem" }}>
+                <button className="btn landing__btn" type="submit">
+                  Continue as Demo Runner
+                </button>
+              </form>
+            ) : null}
           </div>
 
           <aside className="landing__card" aria-label="Forecast preview">
