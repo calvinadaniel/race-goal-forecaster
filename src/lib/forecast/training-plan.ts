@@ -28,10 +28,14 @@ export type TrainingPlan = {
   weeksOut: number;
   startDate: string;
   endDate: string;
-  /** Current / first week — used on Forecast as the initial suggestion */
+  /** Current week — Forecast "this week's suggestion" */
   days: PlanDay[];
   weeks: PlanWeek[];
   notes: string[];
+  planStatus: "draft" | "started";
+  planStartMonday: string | null;
+  /** 1-based index into `weeks` for the week containing asOf */
+  currentWeekIndex: number;
 };
 
 const VOLUME_FLOOR: Record<DistanceKey, number> = {
@@ -337,7 +341,7 @@ function buildWeekTemplate(args: {
   });
 }
 
-/** Full plan from today through race day, plus `days` = this week for Forecast. */
+/** Full plan through race day. Draft starts this Monday; started locks Week 1. */
 export function buildTrainingPlan(args: {
   distanceKey: DistanceKey;
   distanceM: number;
@@ -348,11 +352,18 @@ export function buildTrainingPlan(args: {
   recentWeeklyMiles: number;
   raceDate: Date;
   asOf?: Date;
+  /** When set, Week 1 is this Monday and the plan is "started". */
+  planStartMonday?: Date | null;
 }): TrainingPlan {
   const asOf = startOfDay(args.asOf ?? new Date());
   const raceDate = startOfDay(args.raceDate);
   const end = raceDate < asOf ? asOf : raceDate;
-  const firstMonday = mondayOnOrBefore(asOf);
+  const started =
+    args.planStartMonday != null && !Number.isNaN(args.planStartMonday.getTime());
+  const lockedStart = started
+    ? mondayOnOrBefore(args.planStartMonday!)
+    : null;
+  const firstMonday = lockedStart ?? mondayOnOrBefore(asOf);
   const lastMonday = mondayOnOrBefore(end);
 
   const peak = peakWeeklyMiles(
@@ -429,10 +440,25 @@ export function buildTrainingPlan(args: {
     });
   }
 
-  const current = weeks[0];
+  const asOfMonday = mondayOnOrBefore(asOf);
+  let currentIdx = weeks.findIndex((w) => {
+    const start = startOfDay(new Date(`${w.weekStart}T00:00:00`));
+    const endWeek = addDays(start, 7);
+    return asOf >= start && asOf < endWeek;
+  });
+  if (currentIdx < 0) {
+    if (asOfMonday.getTime() < firstMonday.getTime()) currentIdx = 0;
+    else currentIdx = weeks.length - 1;
+  }
+  const current = weeks[currentIdx]!;
+
   const dist = DISTANCES[args.distanceKey].label;
+  const planStatus = started ? ("started" as const) : ("draft" as const);
+  const planStartMondayIso = lockedStart ? iso(lockedStart) : null;
   const notes = [
-    `Plan runs ${iso(asOf)} → ${iso(end)} (${weeks.length} week${weeks.length === 1 ? "" : "s"}) for a ${dist}.`,
+    planStatus === "draft"
+      ? `Draft plan ${iso(firstMonday)} → ${iso(end)} (${weeks.length} week${weeks.length === 1 ? "" : "s"}) for a ${dist}. Start the plan to lock Week 1.`
+      : `Plan runs ${planStartMondayIso} → ${iso(end)} (${weeks.length} week${weeks.length === 1 ? "" : "s"}) for a ${dist}. You are on week ${current.weekIndex}.`,
     `Volume builds ~${startMiles} → peak ~${peak} mi/week, with deload every 4th week, then taper. Goal pace ≈ ${pace}.`,
     "Cut volume 20–30% if sore, sick, or sleep-deprived. Template only — not personalized coaching.",
   ];
@@ -443,11 +469,14 @@ export function buildTrainingPlan(args: {
     runsPerWeek,
     goalPacePerMi: pace,
     weeksOut: weeks.length,
-    startDate: iso(asOf),
+    startDate: iso(firstMonday),
     endDate: iso(end),
     days: current.days,
     weeks,
     notes,
+    planStatus,
+    planStartMonday: planStartMondayIso,
+    currentWeekIndex: current.weekIndex,
   };
 }
 

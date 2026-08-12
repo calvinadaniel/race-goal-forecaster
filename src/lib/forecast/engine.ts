@@ -35,6 +35,7 @@ export type ForecastInput = {
   weeklyMiles: { weekStart: string; miles: number }[];
   manualBaseline?: ManualBaseline | null;
   asOf?: Date;
+  planStartMonday?: Date | null;
 };
 
 export type Verdict = "on_track" | "at_risk" | "unlikely";
@@ -548,6 +549,7 @@ export function computeForecast(input: ForecastInput): ForecastResult {
       recentWeeklyMiles,
       raceDate: input.raceDate,
       asOf,
+      planStartMonday: input.planStartMonday ?? null,
     }),
     kpis: buildKpis(
       primary.predictedTimeSec,
