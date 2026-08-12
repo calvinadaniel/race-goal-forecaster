@@ -88,6 +88,8 @@ export const goals = pgTable("goals", {
   targetTimeSec: integer("target_time_sec").notNull(),
   raceDate: timestamp("race_date", { mode: "date" }).notNull(),
   intensity: text("intensity").notNull().default("balanced"), // conservative | balanced | aggressive
+  /** Monday Week 1 begins; null = draft (rolling from today). */
+  planStartMonday: timestamp("plan_start_monday", { mode: "date" }),
   manualBaseline: jsonb("manual_baseline").$type<{
     distanceKey: string;
     distanceM: number;
