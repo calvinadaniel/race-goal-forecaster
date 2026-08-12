@@ -2,6 +2,22 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.9.0] — 2026-08-12
+
+Training plan day cards put mileage first so the week is easier to scan.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Training & Forecast
+
+- Each run day shows a large **mileage** figure (e.g. `12 mi`) above the workout title
+- Roomier card padding and spacing so titles and coaching copy breathe
+- Plan cards use **Outfit** for clearer type at card size
+
+### Local development
+
+- Optional `AUTH_DEV_BYPASS=1` seeds a Demo Runner session via `/dev/preview` (local only)
+
 ## [1.8.1] — 2026-07-30
 
 Fixes a React hydration warning on Training and Forecast from term-help dialogs.
@@ -274,6 +290,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.9.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.9.0
 [1.8.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.8.1
 [1.8.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.8.0
 [1.7.2]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.7.2
