@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PlanDayCard } from "@/components/PlanDayCard";
+import { PlanStatusBanner } from "@/components/PlanStatusBanner";
+import { StartPlanSheet } from "@/components/StartPlanSheet";
 import { TermHelpProvider } from "@/components/TermHelpProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +29,7 @@ import {
   type ForecastPayload,
   useForecastData,
 } from "@/lib/use-forecast";
-
+import { cn } from "@/lib/utils";
 const FOCUS_META: Record<
   string,
   { label: string; icon: typeof Zap; className: string }
@@ -75,6 +77,9 @@ export default function TrainingPage() {
   const [previewBusy, setPreviewBusy] = useState(false);
   const [applyBusy, setApplyBusy] = useState(false);
   const [postureError, setPostureError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetMode, setSheetMode] = useState<"start" | "reschedule">("start");
+  const [draftBusy, setDraftBusy] = useState(false);
 
   useEffect(() => {
     setPreviewIntensity(savedIntensity);
@@ -154,6 +159,7 @@ export default function TrainingPage() {
           targetTimeSec: goal.targetTimeSec,
           raceDate: goal.raceDate,
           intensity: previewIntensity,
+          planStartMonday: goal.planStartMonday ?? null,
           manualBaseline: goal.manualBaseline
             ? {
                 distanceKey: goal.manualBaseline.distanceKey,
@@ -173,6 +179,38 @@ export default function TrainingPage() {
       );
     } finally {
       setApplyBusy(false);
+    }
+  }
+
+  async function backToDraft() {
+    setDraftBusy(true);
+    setPostureError(null);
+    try {
+      const res = await fetch("/api/goal", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          distanceKey: goal.distanceKey,
+          targetTimeSec: goal.targetTimeSec,
+          raceDate: goal.raceDate,
+          intensity: goal.intensity,
+          planStartMonday: null,
+          manualBaseline: goal.manualBaseline
+            ? {
+                distanceKey: goal.manualBaseline.distanceKey,
+                timeSec: goal.manualBaseline.timeSec,
+                date: goal.manualBaseline.date,
+              }
+            : null,
+          units,
+        }),
+      });
+      if (!res.ok) throw new Error("draft failed");
+      await load();
+    } catch {
+      setPostureError("Could not return to draft. Please try again.");
+    } finally {
+      setDraftBusy(false);
     }
   }
 
@@ -209,6 +247,37 @@ export default function TrainingPage() {
           </SurfaceCard>
         ) : (
           <>
+            <PlanStatusBanner
+              className="mb-4"
+              planStatus={
+                displayPlan.planStatus ??
+                (goal.planStartMonday ? "started" : "draft")
+              }
+              currentWeekIndex={
+                displayPlan.currentWeekIndex ??
+                data.forecast.trainingPlan?.currentWeekIndex ??
+                1
+              }
+              weeksOut={
+                displayPlan.weeksOut ??
+                weeks.length
+              }
+              planStartMonday={
+                displayPlan.planStartMonday ?? goal.planStartMonday
+              }
+              phase={displayPlan.phase}
+              onStart={() => {
+                setSheetMode("start");
+                setSheetOpen(true);
+              }}
+              onReschedule={() => {
+                setSheetMode("reschedule");
+                setSheetOpen(true);
+              }}
+              onBackToDraft={() => void backToDraft()}
+              backToDraftBusy={draftBusy}
+            />
+
             {postureError ? (
               <p
                 className="mb-4 text-sm text-destructive"
@@ -294,12 +363,26 @@ export default function TrainingPage() {
             </div>
 
             <div className="plan-full">
-              {weeks.map((week) => (
-                <section key={week.weekStart} className="plan-full__week">
+              {weeks.map((week) => {
+                const currentIdx =
+                  displayPlan.currentWeekIndex ??
+                  data.forecast.trainingPlan?.currentWeekIndex ??
+                  1;
+                const isCurrent = week.weekIndex === currentIdx;
+                const isPast = week.weekIndex < currentIdx;
+                return (
+                <section
+                  key={week.weekStart}
+                  className={cn(
+                    "plan-full__week",
+                    isCurrent && "plan-full__week--current",
+                    isPast && "plan-full__week--past",
+                  )}
+                >
                   <header className="plan-full__head">
                     <SectionHeading
                       icon={CalendarRange}
-                      title={`Week ${week.weekIndex}`}
+                      title={`Week ${week.weekIndex}${isCurrent ? " · This week" : ""}`}
                       tone="pine"
                     />
                     <div className="flex flex-wrap gap-2">
@@ -327,7 +410,8 @@ export default function TrainingPage() {
                     })}
                   </div>
                 </section>
-              ))}
+              );
+              })}
             </div>
 
             <ul className="muted mt-5 list-disc space-y-1 pl-5 text-sm leading-relaxed">
@@ -335,6 +419,28 @@ export default function TrainingPage() {
                 <li key={n}>{n}</li>
               ))}
             </ul>
+
+            <StartPlanSheet
+              open={sheetOpen}
+              onOpenChange={setSheetOpen}
+              goal={{
+                distanceKey: goal.distanceKey,
+                targetTimeSec: goal.targetTimeSec,
+                raceDate: goal.raceDate,
+                intensity: goal.intensity,
+                planStartMonday: goal.planStartMonday,
+                manualBaseline: goal.manualBaseline
+                  ? {
+                      distanceKey: goal.manualBaseline.distanceKey,
+                      timeSec: goal.manualBaseline.timeSec,
+                      date: goal.manualBaseline.date,
+                    }
+                  : null,
+              }}
+              units={units}
+              mode={sheetMode}
+              onSaved={load}
+            />
           </>
         )}
       </main>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
@@ -15,6 +16,8 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PlanDayCard } from "@/components/PlanDayCard";
+import { PlanStatusBanner } from "@/components/PlanStatusBanner";
+import { StartPlanSheet } from "@/components/StartPlanSheet";
 import { TermHelpProvider } from "@/components/TermHelpProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,9 +30,7 @@ import { formatDuration } from "@/lib/units";
 import { DISTANCES, type DistanceKey } from "@/lib/forecast/distances";
 import { POSTURE_BLURBS, POSTURE_LABELS } from "@/lib/forecast/postures";
 import { useForecastData, VERDICT_LABEL } from "@/lib/use-forecast";
-import { cn } from "@/lib/utils";
-
-const FOCUS_META: Record<string, { label: string; className: string }> = {
+import { cn } from "@/lib/utils";const FOCUS_META: Record<string, { label: string; className: string }> = {
   easy: { label: "Easy", className: "bg-secondary text-secondary-foreground" },
   optional: {
     label: "Optional",
@@ -42,8 +43,11 @@ const FOCUS_META: Record<string, { label: string; className: string }> = {
 };
 
 export default function ForecastPage() {
-  const { data, units, error, busy, refresh } = useForecastData();
-
+  const { data, units, error, busy, load, refresh } = useForecastData();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetMode, setSheetMode] = useState<"start" | "reschedule">("start");
+  const [draftBusy, setDraftBusy] = useState(false);
+  const [planError, setPlanError] = useState<string | null>(null);
   if (error) {
     return (
       <AppShell>
@@ -75,6 +79,37 @@ export default function ForecastPage() {
   const distLabel =
     DISTANCES[goal.distanceKey as DistanceKey]?.label ?? goal.distanceKey;
 
+  async function backToDraft() {
+    setDraftBusy(true);
+    setPlanError(null);
+    try {
+      const res = await fetch("/api/goal", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          distanceKey: goal.distanceKey,
+          targetTimeSec: goal.targetTimeSec,
+          raceDate: goal.raceDate,
+          intensity: goal.intensity,
+          planStartMonday: null,
+          manualBaseline: goal.manualBaseline
+            ? {
+                distanceKey: goal.manualBaseline.distanceKey,
+                timeSec: goal.manualBaseline.timeSec,
+                date: goal.manualBaseline.date,
+              }
+            : null,
+          units,
+        }),
+      });
+      if (!res.ok) throw new Error("draft failed");
+      await load();
+    } catch {
+      setPlanError("Could not return to draft. Please try again.");
+    } finally {
+      setDraftBusy(false);
+    }
+  }
   return (
     <TermHelpProvider>
     <AppShell
@@ -219,9 +254,40 @@ export default function ForecastPage() {
             {forecast.trainingPlan && (
               <section className="app-section">
                 <SectionHeading icon={ListOrdered} title="This week's suggestion" tone="pine" />
+                <PlanStatusBanner
+                  className="mb-4"
+                  planStatus={
+                    forecast.trainingPlan.planStatus ??
+                    (goal.planStartMonday ? "started" : "draft")
+                  }
+                  currentWeekIndex={forecast.trainingPlan.currentWeekIndex ?? 1}
+                  weeksOut={forecast.trainingPlan.weeksOut}
+                  planStartMonday={
+                    forecast.trainingPlan.planStartMonday ?? goal.planStartMonday
+                  }
+                  phase={forecast.trainingPlan.phase}
+                  onStart={() => {
+                    setSheetMode("start");
+                    setSheetOpen(true);
+                  }}
+                  onReschedule={() => {
+                    setSheetMode("reschedule");
+                    setSheetOpen(true);
+                  }}
+                  onBackToDraft={() => void backToDraft()}
+                  backToDraftBusy={draftBusy}
+                />
+                {planError ? (
+                  <p className="mb-3 text-sm text-destructive" role="alert">
+                    {planError}
+                  </p>
+                ) : null}
                 <p className="muted m-0 leading-relaxed">
-                  {forecast.trainingPlan.phase} · {forecast.trainingPlan.weeklyMiles} mi · goal pace{" "}
-                  {forecast.trainingPlan.goalPacePerMi}
+                  {forecast.trainingPlan.planStatus === "started"
+                    ? `Week ${forecast.trainingPlan.currentWeekIndex} · `
+                    : "Draft · "}
+                  {forecast.trainingPlan.phase} · {forecast.trainingPlan.weeklyMiles}{" "}
+                  mi · goal pace {forecast.trainingPlan.goalPacePerMi}
                 </p>
                 <div className="plan-week">
                   {forecast.trainingPlan.days.map((d) => {
@@ -241,6 +307,27 @@ export default function ForecastPage() {
                     <ArrowRight className="size-4" />
                   </Link>
                 </Button>
+                <StartPlanSheet
+                  open={sheetOpen}
+                  onOpenChange={setSheetOpen}
+                  goal={{
+                    distanceKey: goal.distanceKey,
+                    targetTimeSec: goal.targetTimeSec,
+                    raceDate: goal.raceDate,
+                    intensity: goal.intensity,
+                    planStartMonday: goal.planStartMonday,
+                    manualBaseline: goal.manualBaseline
+                      ? {
+                          distanceKey: goal.manualBaseline.distanceKey,
+                          timeSec: goal.manualBaseline.timeSec,
+                          date: goal.manualBaseline.date,
+                        }
+                      : null,
+                  }}
+                  units={units}
+                  mode={sheetMode}
+                  onSaved={load}
+                />
               </section>
             )}
 

@@ -584,6 +584,16 @@ label {
   gap: 0.75rem;
 }
 
+.plan-full__week--past {
+  opacity: 0.62;
+}
+
+.plan-full__week--current {
+  outline: 1px solid rgba(255, 94, 86, 0.35);
+  outline-offset: 0.5rem;
+  border-radius: 0.75rem;
+}
+
 .plan-full__head {
   display: flex;
   flex-wrap: wrap;
