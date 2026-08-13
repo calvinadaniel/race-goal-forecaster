@@ -2,6 +2,19 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.10.0] — 2026-08-12
+
+Start a training plan on a real Monday so Week N follows the calendar — and keep the long run the longest day of the week.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Training & Forecast
+
+- **Start plan** with posture + Week 1 Monday (Draft until you start)
+- After start, banners show **Week N of M**; this week’s suggestion advances with the calendar
+- **Reschedule** or **Back to draft** anytime
+- Easy/quality days stay shorter than the Saturday long (fixes Conservative weeks where Sunday could outrun the long)
+
 ## [1.9.0] — 2026-08-12
 
 Training plan day cards put mileage first so the week is easier to scan.
@@ -290,6 +303,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.10.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.10.0
 [1.9.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.9.0
 [1.8.1]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.8.1
 [1.8.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.8.0
