@@ -1,5 +1,5 @@
 import { DISTANCES, type DistanceKey } from "./distances";
-import { POSTURE_LABELS, type Intensity } from "./postures";
+import { type Intensity } from "./postures";
 
 type Verdict = "on_track" | "at_risk" | "unlikely";
 type Phase = "Base" | "Build" | "Peak" | "Taper";
@@ -223,7 +223,7 @@ function buildWeekTemplate(args: {
     weekIndex,
     totalWeeks,
   });
-  let qualityMi =
+  const qualityMi =
     intensity === "conservative"
       ? Math.max(3, Math.round(weeklyMiles * 0.15))
       : Math.max(4, Math.round(weeklyMiles * 0.2));
