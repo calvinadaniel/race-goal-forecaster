@@ -216,14 +216,14 @@ function buildWeekTemplate(args: {
   const runsPerWeek = runsPerWeekFor(intensity);
   const progress = totalWeeks <= 1 ? 1 : weekIndex / Math.max(1, totalWeeks - 1);
 
-  const longMi = longRunMiles({
+  let longMi = longRunMiles({
     distanceKey,
     weeklyMiles,
     phase,
     weekIndex,
     totalWeeks,
   });
-  const qualityMi =
+  let qualityMi =
     intensity === "conservative"
       ? Math.max(3, Math.round(weeklyMiles * 0.15))
       : Math.max(4, Math.round(weeklyMiles * 0.2));
@@ -251,6 +251,35 @@ function buildWeekTemplate(args: {
             : "Goal-pace intervals"
           : "Race-pace sharpeners";
 
+  const finishMiles = Math.min(3, Math.max(1, Math.round(longMi * (0.12 + progress * 0.12))));
+  // Miles shown on the long-run card (taper shortens the prescribed long)
+  let longDisplayMi =
+    phase === "Taper"
+      ? Math.max(4, Math.round(longMi * 0.6))
+      : longMi;
+
+  // Long must stay the longest run of the week — never let easy/quality overshoot it.
+  if (qualityMi >= longDisplayMi) {
+    longDisplayMi = qualityMi + 1;
+    longMi = Math.max(longMi, longDisplayMi);
+  }
+
+  const easySlots = Math.max(1, runsPerWeek - 2);
+  let easyFill = Math.max(
+    3,
+    Math.round((weeklyMiles - longDisplayMi - qualityMi) / easySlots),
+  );
+  const maxEasy = Math.max(3, longDisplayMi - 1);
+  if (easyFill > maxEasy) {
+    const overflow = (easyFill - maxEasy) * easySlots;
+    longDisplayMi += overflow;
+    longMi = Math.max(longMi, longDisplayMi);
+    easyFill = maxEasy;
+  }
+
+  const easyDayMi = (boost = 0) =>
+    Math.min(Math.max(3, easyFill + boost), Math.max(3, longDisplayMi - 1));
+
   const qualityDetail =
     phase === "Taper"
       ? `20–30 min easy + ${intervalReps} × 3 min @ ~${pace}, full recoveries.`
@@ -260,30 +289,24 @@ function buildWeekTemplate(args: {
           ? `${qualityMi} mi with ${intervalReps} × 1 mi @ ~${pace}, jog recoveries.`
           : `${qualityMi} mi with ${intervalReps + 2} × 400–800m @ faster than ${pace}, jog recoveries.`;
 
-  const finishMiles = Math.min(3, Math.max(1, Math.round(longMi * (0.12 + progress * 0.12))));
   const longDetail =
     phase === "Taper"
-      ? `${Math.max(4, Math.round(longMi * 0.6))} mi easy — keep it conversational.`
+      ? `${longDisplayMi} mi easy — keep it conversational.`
       : phase === "Base"
-        ? `${longMi} mi easy throughout.`
-        : `${longMi} mi easy; last ${finishMiles} mi near ${pace} if feeling good.`;
-
-  const easyFill = Math.max(
-    3,
-    Math.round((weeklyMiles - longMi - qualityMi) / Math.max(1, runsPerWeek - 2)),
-  );
+        ? `${longDisplayMi} mi easy throughout.`
+        : `${longDisplayMi} mi easy; last ${Math.min(finishMiles, Math.max(1, longDisplayMi - 1))} mi near ${pace} if feeling good.`;
 
   const skeleton: Omit<PlanDay, "date">[] =
     runsPerWeek >= 6
       ? [
-          { day: "Mon", focus: "easy", title: "Easy", detail: `${easyFill} mi easy.` },
+          { day: "Mon", focus: "easy", title: "Easy", detail: `${easyDayMi()} mi easy.` },
           { day: "Tue", focus: "quality", title: qualityTitle, detail: qualityDetail },
-          { day: "Wed", focus: "easy", title: "Easy", detail: `${easyFill} mi easy.` },
+          { day: "Wed", focus: "easy", title: "Easy", detail: `${easyDayMi()} mi easy.` },
           {
             day: "Thu",
             focus: "optional",
             title: "Optional easy / strides",
-            detail: `${Math.max(3, easyFill - 1)} mi easy + 4 strides.`,
+            detail: `${easyDayMi(-1)} mi easy + 4 strides.`,
           },
           { day: "Fri", focus: "rest", title: "Rest", detail: "Full rest or 20–30 min walk." },
           { day: "Sat", focus: "long", title: "Long run", detail: longDetail },
@@ -291,19 +314,19 @@ function buildWeekTemplate(args: {
             day: "Sun",
             focus: "easy",
             title: "Easy shakeout",
-            detail: `${Math.max(3, easyFill - 1)} mi easy.`,
+            detail: `${easyDayMi(-1)} mi easy.`,
           },
         ]
       : runsPerWeek === 5
         ? [
             { day: "Mon", focus: "rest", title: "Rest", detail: "Full rest or easy walk." },
             { day: "Tue", focus: "quality", title: qualityTitle, detail: qualityDetail },
-            { day: "Wed", focus: "easy", title: "Easy", detail: `${easyFill} mi easy.` },
+            { day: "Wed", focus: "easy", title: "Easy", detail: `${easyDayMi()} mi easy.` },
             {
               day: "Thu",
               focus: "easy",
               title: "Easy + strides",
-              detail: `${easyFill} mi easy + 4 strides.`,
+              detail: `${easyDayMi()} mi easy + 4 strides.`,
             },
             { day: "Fri", focus: "rest", title: "Rest", detail: "Full rest." },
             { day: "Sat", focus: "long", title: "Long run", detail: longDetail },
@@ -311,17 +334,17 @@ function buildWeekTemplate(args: {
               day: "Sun",
               focus: "easy",
               title: "Easy",
-              detail: `${Math.max(3, easyFill - 1)} mi easy.`,
+              detail: `${easyDayMi(-1)} mi easy.`,
             },
           ]
         : [
             { day: "Mon", focus: "rest", title: "Rest", detail: "Full rest." },
             { day: "Tue", focus: "quality", title: qualityTitle, detail: qualityDetail },
             { day: "Wed", focus: "rest", title: "Rest", detail: "Rest or cross-train easy." },
-            { day: "Thu", focus: "easy", title: "Easy", detail: `${easyFill + 1} mi easy.` },
+            { day: "Thu", focus: "easy", title: "Easy", detail: `${easyDayMi(1)} mi easy.` },
             { day: "Fri", focus: "rest", title: "Rest", detail: "Full rest." },
             { day: "Sat", focus: "long", title: "Long run", detail: longDetail },
-            { day: "Sun", focus: "easy", title: "Easy", detail: `${easyFill} mi easy.` },
+            { day: "Sun", focus: "easy", title: "Easy", detail: `${easyDayMi()} mi easy.` },
           ];
 
   return skeleton.map((slot, i) => {
