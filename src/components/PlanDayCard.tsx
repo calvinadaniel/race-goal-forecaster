@@ -41,6 +41,7 @@ function splitPlanMileage(detail: string): {
 export function PlanDayCard({
   day,
   focusMeta,
+  isToday = false,
   className,
 }: {
   day: Day;
@@ -49,6 +50,7 @@ export function PlanDayCard({
     className: string;
     icon?: ComponentType<{ className?: string }>;
   };
+  isToday?: boolean;
   className?: string;
 }) {
   const { openTerm } = useTermHelp();
@@ -58,13 +60,20 @@ export function PlanDayCard({
 
   return (
     <SurfaceCard
-      className={cn("plan-day gap-3 py-5", `plan-day--${day.focus}`, className)}
+      id={day.date ? `plan-day-${day.date}` : undefined}
+      className={cn(
+        "plan-day gap-3 py-5",
+        `plan-day--${day.focus}`,
+        isToday && "plan-day--today",
+        className,
+      )}
     >
       <CardHeader className="gap-2.5 px-5 pb-0">
         <div className="flex items-center justify-between gap-3">
           <p className="eyebrow m-0">
             {day.day}
             {day.date ? ` · ${day.date.slice(5)}` : ""}
+            {isToday ? " · Today" : ""}
           </p>
           <button
             type="button"

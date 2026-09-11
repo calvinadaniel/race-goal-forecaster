@@ -601,6 +601,35 @@ label {
   align-items: baseline;
 }
 
+.plan-full__week details {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.plan-full__week summary.plan-full__head {
+  cursor: pointer;
+  list-style: none;
+}
+
+.plan-full__week summary.plan-full__head::-webkit-details-marker {
+  display: none;
+}
+
+.plan-full__week summary.plan-full__head::before {
+  content: "▸";
+  margin-right: 0.35rem;
+  color: var(--muted-foreground, #6b7280);
+}
+
+.plan-full__week details[open] > summary.plan-full__head::before {
+  content: "▾";
+}
+
+.plan-day--today {
+  outline: 2px solid var(--accent, #ff5e56);
+  outline-offset: 2px;
+}
+
 .profile-hero {
   display: flex;
   gap: 1rem;

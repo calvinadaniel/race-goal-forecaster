@@ -25,6 +25,7 @@ import {
   POSTURE_LABELS,
   type Intensity,
 } from "@/lib/forecast/postures";
+import { isoDate } from "@/lib/plan-start";
 import {
   type ForecastPayload,
   useForecastData,
@@ -86,6 +87,27 @@ export default function TrainingPage() {
     setPreviewPlan(null);
     setPostureError(null);
   }, [savedIntensity]);
+
+  const [todayIso, setTodayIso] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTodayIso(isoDate(new Date()));
+  }, []);
+
+  useEffect(() => {
+    if (!todayIso) return;
+    const plan =
+      previewIntensity !== savedIntensity && previewPlan
+        ? previewPlan
+        : data?.forecast.trainingPlan;
+    if (!plan?.weeks?.length) return;
+    const weekIdx =
+      plan.currentWeekIndex ?? data?.forecast.trainingPlan?.currentWeekIndex ?? 1;
+    const el =
+      document.getElementById(`plan-day-${todayIso}`) ??
+      document.getElementById(`plan-week-${weekIdx}`);
+    el?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [data, previewIntensity, previewPlan, savedIntensity, todayIso]);
 
   if (error) {
     return (
@@ -370,19 +392,11 @@ export default function TrainingPage() {
                   1;
                 const isCurrent = week.weekIndex === currentIdx;
                 const isPast = week.weekIndex < currentIdx;
-                return (
-                <section
-                  key={week.weekStart}
-                  className={cn(
-                    "plan-full__week",
-                    isCurrent && "plan-full__week--current",
-                    isPast && "plan-full__week--past",
-                  )}
-                >
-                  <header className="plan-full__head">
+                const head = (
+                  <>
                     <SectionHeading
                       icon={CalendarRange}
-                      title={`Week ${week.weekIndex}${isCurrent ? " · This week" : ""}`}
+                      title={`Week ${week.weekIndex}${isCurrent ? " · This week" : ""}${isPast ? " · Past" : ""}`}
                       tone="pine"
                     />
                     <div className="flex flex-wrap gap-2">
@@ -396,7 +410,9 @@ export default function TrainingPage() {
                         ~{week.weeklyMiles} mi
                       </Badge>
                     </div>
-                  </header>
+                  </>
+                );
+                const days = (
                   <div className="plan-week">
                     {week.days.map((d) => {
                       const focus = FOCUS_META[d.focus] ?? FOCUS_META.easy;
@@ -405,10 +421,33 @@ export default function TrainingPage() {
                           key={`${d.day}-${d.date ?? d.title}`}
                           day={d}
                           focusMeta={focus}
+                          isToday={Boolean(todayIso && d.date === todayIso)}
                         />
                       );
                     })}
                   </div>
+                );
+                return (
+                <section
+                  key={week.weekStart}
+                  id={`plan-week-${week.weekIndex}`}
+                  className={cn(
+                    "plan-full__week",
+                    isCurrent && "plan-full__week--current",
+                    isPast && "plan-full__week--past",
+                  )}
+                >
+                  {isPast ? (
+                    <details>
+                      <summary className="plan-full__head">{head}</summary>
+                      {days}
+                    </details>
+                  ) : (
+                    <>
+                      <header className="plan-full__head">{head}</header>
+                      {days}
+                    </>
+                  )}
                 </section>
               );
               })}
