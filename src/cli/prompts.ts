@@ -23,6 +23,13 @@ const INTENSITIES = new Set<Intensity>([
 ]);
 const UNIT_VALUES = new Set<Units>(["mi", "km"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const COLON_TIME_RE = /^\d+:[0-5]\d(?::[0-5]\d)?$/;
+
+function parseColonDuration(value: string): number | null {
+  const trimmed = value.trim();
+  if (!COLON_TIME_RE.test(trimmed)) return null;
+  return parseDuration(trimmed);
+}
 
 function isDistanceKey(key: string): key is DistanceKey {
   return key in DISTANCES;
@@ -50,7 +57,7 @@ export function parseGoalAnswers(
     return { error: `Unknown distance "${answers.distanceKey}"` };
   }
 
-  const targetTimeSec = parseDuration(answers.goalTime);
+  const targetTimeSec = parseColonDuration(answers.goalTime);
   if (targetTimeSec == null || targetTimeSec <= 0) {
     return { error: "Invalid goal time" };
   }
@@ -78,7 +85,7 @@ export function parseGoalAnswers(
     return { error: `Unknown baseline distance "${answers.baselineDistanceKey}"` };
   }
 
-  const baselineTimeSec = parseDuration(answers.baselineTime);
+  const baselineTimeSec = parseColonDuration(answers.baselineTime);
   if (baselineTimeSec == null || baselineTimeSec <= 0) {
     return { error: "Invalid baseline time" };
   }

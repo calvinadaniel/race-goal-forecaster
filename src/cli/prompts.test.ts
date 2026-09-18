@@ -25,7 +25,7 @@ describe("parseGoalAnswers", () => {
     expect(g.manualBaseline.timeSec).toBe(6204);
   });
 
-  it("rejects unknown distance and past race dates", () => {
+  it("rejects unknown distance", () => {
     const badDist = parseGoalAnswers(
       {
         distanceKey: "ultra",
@@ -40,5 +40,57 @@ describe("parseGoalAnswers", () => {
       asOf,
     );
     expect("error" in badDist).toBe(true);
+  });
+
+  it("rejects past race date relative to asOf", () => {
+    const pastRace = parseGoalAnswers(
+      {
+        distanceKey: "half",
+        goalTime: "1:32:00",
+        raceDate: "2026-09-17",
+        intensity: "balanced",
+        units: "mi",
+        baselineDistanceKey: "half",
+        baselineTime: "1:43:24",
+        baselineDate: "2026-03-15",
+      },
+      asOf,
+    );
+    expect("error" in pastRace).toBe(true);
+    if ("error" in pastRace) {
+      expect(pastRace.error).toMatch(/future/i);
+    }
+  });
+
+  it("rejects malformed goal and baseline times", () => {
+    const validAnswers = {
+      distanceKey: "half",
+      goalTime: "1:32:00",
+      raceDate: "2026-11-08",
+      intensity: "balanced",
+      units: "mi",
+      baselineDistanceKey: "half",
+      baselineTime: "1:43:24",
+      baselineDate: "2026-03-15",
+    };
+
+    for (const goalTime of ["5520", "1:99:00"]) {
+      const badGoal = parseGoalAnswers({ ...validAnswers, goalTime }, asOf);
+      expect("error" in badGoal).toBe(true);
+      if ("error" in badGoal) {
+        expect(badGoal.error).toMatch(/goal time/i);
+      }
+    }
+
+    for (const baselineTime of ["5520", "1:99:00"]) {
+      const badBaseline = parseGoalAnswers(
+        { ...validAnswers, baselineTime },
+        asOf,
+      );
+      expect("error" in badBaseline).toBe(true);
+      if ("error" in badBaseline) {
+        expect(badBaseline.error).toMatch(/baseline time/i);
+      }
+    }
   });
 });
