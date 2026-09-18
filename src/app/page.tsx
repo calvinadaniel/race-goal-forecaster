@@ -54,7 +54,7 @@ export default async function Home({
               </button>
             </form>
             <form action={signInWithStrava} className="landing__demo">
-              <button className="btn btn-ghost" type="submit">
+              <button className="btn btn-ghost landing__btn" type="submit">
                 <StravaIcon />
                 Continue with Strava
               </button>

@@ -25,15 +25,19 @@ export default function OnboardingPage() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const res = await fetch("/api/goal");
-      const payload: unknown = await res.json().catch(() => null);
-      const next = onboardingPathForGoalPayload(payload);
-      if (cancelled) return;
-      if (next) {
-        router.replace(next);
-        return;
+      try {
+        const res = await fetch("/api/goal");
+        const payload: unknown = await res.json().catch(() => null);
+        const next = onboardingPathForGoalPayload(payload);
+        if (cancelled) return;
+        if (next) {
+          router.replace(next);
+          return;
+        }
+        setReady(true);
+      } catch {
+        if (!cancelled) setReady(true);
       }
-      setReady(true);
     })();
     return () => {
       cancelled = true;
@@ -100,7 +104,7 @@ export default function OnboardingPage() {
 
   if (!ready) {
     return (
-      <main className="container onboarding">
+      <main className="container onboarding" style={{ padding: "2rem 0 4rem" }}>
         <BrandLogo href="/" />
         <p className="muted">Loading…</p>
       </main>
