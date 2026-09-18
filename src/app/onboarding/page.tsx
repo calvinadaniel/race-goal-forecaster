@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BrandLogo } from "@/components/BrandLogo";
 import { DISTANCE_LIST } from "@/lib/forecast/distances";
+import { onboardingPathForGoalPayload } from "@/lib/onboarding-gate";
 import { parseDuration } from "@/lib/units";
 
 export default function OnboardingPage() {
@@ -18,6 +20,25 @@ export default function OnboardingPage() {
   const [baselineDistance, setBaselineDistance] = useState("half");
   const [baselineTime, setBaselineTime] = useState("1:43:24");
   const [baselineDate, setBaselineDate] = useState("");
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const res = await fetch("/api/goal");
+      const payload: unknown = await res.json().catch(() => null);
+      const next = onboardingPathForGoalPayload(payload);
+      if (cancelled) return;
+      if (next) {
+        router.replace(next);
+        return;
+      }
+      setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -75,6 +96,15 @@ export default function OnboardingPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (!ready) {
+    return (
+      <main className="container onboarding">
+        <BrandLogo href="/" />
+        <p className="muted">Loading…</p>
+      </main>
+    );
   }
 
   return (
