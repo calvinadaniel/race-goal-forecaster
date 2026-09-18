@@ -111,14 +111,35 @@ export async function ensureFreshCredentials(
   return updated;
 }
 
+export function systemBrowserCommand(
+  url: string,
+  platform = process.platform,
+): {
+  command: string;
+  args: string[];
+  windowsVerbatimArguments: boolean;
+} {
+  if (platform === "win32") {
+    // cmd's `start` splits on `&` unless the URL is quoted.
+    return {
+      command: "cmd",
+      args: ["/c", "start", '""', `"${url}"`],
+      windowsVerbatimArguments: true,
+    };
+  }
+  if (platform === "darwin") {
+    return { command: "open", args: [url], windowsVerbatimArguments: false };
+  }
+  return { command: "xdg-open", args: [url], windowsVerbatimArguments: false };
+}
+
 export function openSystemBrowser(url: string): void {
-  const [command, args] =
-    process.platform === "win32"
-      ? ["cmd", ["/c", "start", "", url]]
-      : process.platform === "darwin"
-        ? ["open", [url]]
-        : ["xdg-open", [url]];
-  const child = spawn(command, args, { detached: true, stdio: "ignore" });
+  const { command, args, windowsVerbatimArguments } = systemBrowserCommand(url);
+  const child = spawn(command, args, {
+    detached: true,
+    stdio: "ignore",
+    windowsVerbatimArguments,
+  });
   child.once("error", () => {
     // The URL was printed for manual opening before this was called.
   });

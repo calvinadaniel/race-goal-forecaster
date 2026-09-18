@@ -6,6 +6,7 @@ import {
   apiBase,
   ensureFreshCredentials,
   loginWithLoopback,
+  systemBrowserCommand,
 } from "./auth";
 import { readCredentials, writeCredentials } from "./store";
 
@@ -126,6 +127,15 @@ describe("CLI authentication", () => {
       "Token refresh failed (502)",
     );
     expect(readCredentials()).toEqual(credentials);
+  });
+
+  it("quotes Windows start URLs so query ampersands survive", () => {
+    const url =
+      "http://localhost:3000/api/cli/strava/start?redirect=http%3A%2F%2F127.0.0.1%3A5555%2Fcallback&nonce=abc";
+    const launched = systemBrowserCommand(url, "win32");
+    expect(launched.command).toBe("cmd");
+    expect(launched.args).toEqual(["/c", "start", '""', `"${url}"`]);
+    expect(launched.windowsVerbatimArguments).toBe(true);
   });
 
   it("ignores a loopback ticket with a mismatched nonce", async () => {
