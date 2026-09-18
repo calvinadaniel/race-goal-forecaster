@@ -12,9 +12,9 @@ export async function signInWithGoogle() {
   await signIn("google", { redirectTo: "/app/forecast" });
 }
 
-/** Secondary CTA for existing Strava-only testers. */
+/** Secondary landing CTA: Strava session without Google. */
 export async function signInWithStrava() {
-  await signIn("strava", { redirectTo: "/app/forecast" });
+  await signIn("strava", { redirectTo: "/onboarding" });
 }
 
 /** Local-only: enter as a seeded demo runner (AUTH_DEV_BYPASS=1). */
