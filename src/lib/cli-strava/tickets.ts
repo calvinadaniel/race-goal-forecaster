@@ -35,12 +35,10 @@ export function createDbTicketStore(): TicketStore {
     async redeemTicket(id, now = new Date()) {
       const db = getDb();
       const [row] = await db
-        .select()
-        .from(cliStravaTickets)
+        .delete(cliStravaTickets)
         .where(eq(cliStravaTickets.id, id))
-        .limit(1);
+        .returning();
       if (!row) return null;
-      await db.delete(cliStravaTickets).where(eq(cliStravaTickets.id, id));
       if (row.expiresAt.getTime() <= now.getTime()) return null;
       return row.payload;
     },
