@@ -98,3 +98,23 @@ export const goals = pgTable("goals", {
   } | null>(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
+
+export type CliStravaTicketPayload = {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  scope: string;
+  athlete: {
+    id: number;
+    username?: string | null;
+    firstname?: string | null;
+    lastname?: string | null;
+  };
+};
+
+export const cliStravaTickets = pgTable("cli_strava_tickets", {
+  id: text("id").primaryKey(),
+  payload: jsonb("payload").$type<CliStravaTicketPayload>().notNull(),
+  expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
