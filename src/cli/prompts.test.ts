@@ -42,6 +42,23 @@ describe("parseGoalAnswers", () => {
     expect("error" in badDist).toBe(true);
   });
 
+  it('rejects "constructor" as distance key', () => {
+    const badDist = parseGoalAnswers(
+      {
+        distanceKey: "constructor",
+        goalTime: "1:32:00",
+        raceDate: "2026-11-08",
+        intensity: "balanced",
+        units: "mi",
+        baselineDistanceKey: "half",
+        baselineTime: "1:43:24",
+        baselineDate: "2026-03-15",
+      },
+      asOf,
+    );
+    expect("error" in badDist).toBe(true);
+  });
+
   it("rejects past race date relative to asOf", () => {
     const pastRace = parseGoalAnswers(
       {

@@ -32,7 +32,7 @@ function parseColonDuration(value: string): number | null {
 }
 
 function isDistanceKey(key: string): key is DistanceKey {
-  return key in DISTANCES;
+  return Object.hasOwn(DISTANCES, key);
 }
 
 function parseDateKey(value: string): string | null {
