@@ -2,6 +2,18 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.12.0] — 2026-09-18
+
+Log in with Strava from the command line, then print a forecast and plan from your activities.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### CLI
+
+- `npm run truepace -- login` opens Strava in the browser; tokens stay in `~/.truepace` (no Google account)
+- `whoami`, `forecast`, and `plan` run locally from your Strava history after you set a goal once
+- Windows login keeps the full authorize URL so the broker receives the nonce
+
 ## [1.11.0] — 2026-09-11
 
 Training plan jumps to this week and today instead of making you scroll past finished weeks.
@@ -315,6 +327,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.12.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.12.0
 [1.11.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.11.0
 [1.10.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.10.0
 [1.9.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.9.0
