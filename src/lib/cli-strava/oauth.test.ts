@@ -103,4 +103,14 @@ describe("refreshCliToken", () => {
     });
     expect(result).toEqual({ ok: false, status: 400 });
   });
+
+  it("rejects 200 responses missing token fields", async () => {
+    process.env.AUTH_STRAVA_ID = "id";
+    process.env.AUTH_STRAVA_SECRET = "secret";
+    const result = await refreshCliToken({
+      refreshToken: "old",
+      fetchImpl: async () => jsonResponse({ scope: "activity:read_all" }),
+    });
+    expect(result).toEqual({ ok: false, status: 502 });
+  });
 });

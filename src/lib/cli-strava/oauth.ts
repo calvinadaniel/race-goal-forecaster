@@ -123,14 +123,23 @@ export async function refreshCliToken(args: {
   }
 
   const data = (await resp.json()) as StravaTokenResponse;
+
+  if (
+    !data.access_token ||
+    !data.refresh_token ||
+    typeof data.expires_at !== "number"
+  ) {
+    return { ok: false, status: 502 };
+  }
+
   const scope = data.scope ?? DEFAULT_REFRESH_SCOPE;
 
   return {
     ok: true,
     payload: {
-      access_token: data.access_token!,
-      refresh_token: data.refresh_token!,
-      expires_at: data.expires_at!,
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at: data.expires_at,
       scope,
     },
   };
