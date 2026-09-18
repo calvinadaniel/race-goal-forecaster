@@ -73,6 +73,21 @@ describe("Strava CLI broker routes", () => {
       },
     );
 
+    it("302s to Strava when given a loopback port instead of a redirect URL", async () => {
+      const { GET } = await import("./start/route");
+      const res = await GET(
+        new Request(
+          "https://app.example/api/cli/strava/start?port=5555&nonce=cli-nonce",
+        ),
+      );
+
+      expect(res.status).toBe(302);
+      const location = new URL(res.headers.get("location")!);
+      const state = verifyState(location.searchParams.get("state")!, secret);
+      expect(state?.redirect).toBe(redirect);
+      expect(state?.nonce).toBe("cli-nonce");
+    });
+
     it("rejects a missing nonce", async () => {
       const { GET } = await import("./start/route");
       const res = await GET(

@@ -63,9 +63,8 @@ describe("CLI authentication", () => {
       },
     });
 
-    expect(opened[0]).toContain(
-      "redirect=http%3A%2F%2F127.0.0.1%3A5555%2Fcallback",
-    );
+    expect(opened[0]).toContain("port=5555");
+    expect(opened[0]).not.toContain("127.0.0.1");
     expect(opened[0]).toContain("&nonce=");
     expect(console.log).toHaveBeenCalledWith(
       `Open this if your browser didn't launch: ${opened[0]}`,

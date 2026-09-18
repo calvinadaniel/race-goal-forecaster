@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import { cliCallbackUrl } from "@/lib/cli-strava/oauth";
-import { parseLoopbackRedirect } from "@/lib/cli-strava/redirect";
+import { parseStartLoopback } from "@/lib/cli-strava/redirect";
 import { signState } from "@/lib/cli-strava/state";
 
 export async function GET(req: Request) {
   const requestUrl = new URL(req.url);
-  const redirect = parseLoopbackRedirect(
-    requestUrl.searchParams.get("redirect"),
-  );
+  const redirect = parseStartLoopback(requestUrl);
   if (!redirect.ok) {
     return NextResponse.json({ error: "Invalid redirect" }, { status: 400 });
   }

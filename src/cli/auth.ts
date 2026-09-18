@@ -43,7 +43,7 @@ export async function loginWithLoopback(
   }
 
   const authorizeUrl =
-    `${apiBase()}/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}` +
+    `${apiBase()}/api/cli/strava/start?port=${listener.port}` +
     `&nonce=${encodeURIComponent(nonce)}`;
   console.log(`Open this if your browser didn't launch: ${authorizeUrl}`);
   deps.openBrowser(authorizeUrl);
