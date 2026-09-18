@@ -97,7 +97,10 @@ describe("withRetry", () => {
       .mockRejectedValueOnce(new Error("Strava activities fetch failed: 429"))
       .mockResolvedValue("ok");
 
-    await expect(withRetry(fn)).resolves.toBe("ok");
+    const sleep = vi.fn(async () => {});
+    await expect(withRetry(fn, 3, sleep)).resolves.toBe("ok");
     expect(fn).toHaveBeenCalledTimes(3);
+    expect(sleep).toHaveBeenNthCalledWith(1, 200);
+    expect(sleep).toHaveBeenNthCalledWith(2, 400);
   });
 });

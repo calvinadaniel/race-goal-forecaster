@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { parseLoopbackRedirect } from "@/lib/cli-strava/redirect";
 import {
   clearCredentials,
@@ -13,7 +14,7 @@ export type LoginDeps = {
   openBrowser: (url: string) => void;
   fetchImpl: typeof fetch;
   listen: (
-    handler: (ticket: string) => void,
+    handler: (ticket: string, nonce: string) => void,
   ) => Promise<{ port: number; close: () => void }>;
   timeoutMs?: number;
 };
@@ -25,20 +26,27 @@ export function apiBase(): string {
 export async function loginWithLoopback(
   deps: LoginDeps,
 ): Promise<CliCredentials> {
+  const nonce = randomUUID();
   let receiveTicket!: (ticket: string) => void;
   const ticketPromise = new Promise<string>((resolve) => {
     receiveTicket = resolve;
   });
-  const listener = await deps.listen(receiveTicket);
+  const listener = await deps.listen((ticket, callbackNonce) => {
+    if (callbackNonce === nonce) {
+      receiveTicket(ticket);
+    }
+  });
   const redirect = `http://127.0.0.1:${listener.port}/callback`;
   if (!parseLoopbackRedirect(redirect).ok) {
     listener.close();
     throw new Error("Invalid loopback redirect");
   }
 
-  deps.openBrowser(
-    `${apiBase()}/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}`,
-  );
+  const authorizeUrl =
+    `${apiBase()}/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}` +
+    `&nonce=${encodeURIComponent(nonce)}`;
+  console.log(`Open this if your browser didn't launch: ${authorizeUrl}`);
+  deps.openBrowser(authorizeUrl);
 
   let timeout: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -88,7 +96,7 @@ export async function ensureFreshCredentials(
     body: JSON.stringify({ refresh_token: credentials.refresh_token }),
   });
   if (!response.ok) {
-    if (response.status >= 400 && response.status < 500) {
+    if (response.status === 401) {
       clearCredentials();
     }
     throw new Error(`Token refresh failed (${response.status})`);
@@ -110,5 +118,9 @@ export function openSystemBrowser(url: string): void {
       : process.platform === "darwin"
         ? ["open", [url]]
         : ["xdg-open", [url]];
-  spawn(command, args, { detached: true, stdio: "ignore" }).unref();
+  const child = spawn(command, args, { detached: true, stdio: "ignore" });
+  child.once("error", () => {
+    // The URL was printed for manual opening before this was called.
+  });
+  child.unref();
 }

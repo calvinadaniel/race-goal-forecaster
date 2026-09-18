@@ -122,8 +122,12 @@ export async function refreshCliToken(args: {
   | { ok: false; status: number }
 > {
   const fetchImpl = args.fetchImpl ?? fetch;
-  const clientId = process.env.AUTH_STRAVA_ID!;
-  const clientSecret = process.env.AUTH_STRAVA_SECRET!;
+  const clientId = process.env.AUTH_STRAVA_ID;
+  const clientSecret = process.env.AUTH_STRAVA_SECRET;
+
+  if (!clientId || !clientSecret) {
+    return { ok: false, status: 500 };
+  }
 
   const resp = await postStravaToken(
     {

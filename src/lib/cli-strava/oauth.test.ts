@@ -70,6 +70,27 @@ describe("exchangeCliCode", () => {
 });
 
 describe("refreshCliToken", () => {
+  it.each(["AUTH_STRAVA_ID", "AUTH_STRAVA_SECRET"] as const)(
+    "returns 500 without calling Strava when %s is missing",
+    async (missingName) => {
+      process.env.AUTH_STRAVA_ID = "id";
+      process.env.AUTH_STRAVA_SECRET = "secret";
+      delete process.env[missingName];
+      let called = false;
+
+      const result = await refreshCliToken({
+        refreshToken: "old",
+        fetchImpl: async () => {
+          called = true;
+          return jsonResponse({});
+        },
+      });
+
+      expect(result).toEqual({ ok: false, status: 500 });
+      expect(called).toBe(false);
+    },
+  );
+
   it("returns rotated tokens", async () => {
     process.env.AUTH_STRAVA_ID = "id";
     process.env.AUTH_STRAVA_SECRET = "secret";

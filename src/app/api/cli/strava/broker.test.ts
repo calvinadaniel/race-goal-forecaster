@@ -65,7 +65,7 @@ describe("Strava CLI broker routes", () => {
         const { GET } = await import("./start/route");
         const res = await GET(
           new Request(
-            `https://app.example/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}`,
+            `https://app.example/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}&nonce=cli-nonce`,
           ),
         );
 
@@ -73,12 +73,23 @@ describe("Strava CLI broker routes", () => {
       },
     );
 
+    it("rejects a missing nonce", async () => {
+      const { GET } = await import("./start/route");
+      const res = await GET(
+        new Request(
+          `https://app.example/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}`,
+        ),
+      );
+
+      expect(res.status).toBe(400);
+    });
+
     it("302s to Strava with the exact OAuth parameters and signed state", async () => {
       const before = Math.floor(Date.now() / 1000);
       const { GET } = await import("./start/route");
       const res = await GET(
         new Request(
-          `https://request.example/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}`,
+          `https://request.example/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}&nonce=cli-nonce`,
         ),
       );
       const after = Math.floor(Date.now() / 1000);
@@ -97,7 +108,7 @@ describe("Strava CLI broker routes", () => {
       });
       const state = verifyState(location.searchParams.get("state")!, secret);
       expect(state?.redirect).toBe(redirect);
-      expect(state?.nonce).toBeTruthy();
+      expect(state?.nonce).toBe("cli-nonce");
       expect(state?.exp).toBeGreaterThanOrEqual(before + 600);
       expect(state?.exp).toBeLessThanOrEqual(after + 600);
     });
@@ -107,7 +118,7 @@ describe("Strava CLI broker routes", () => {
       const { GET } = await import("./start/route");
       const res = await GET(
         new Request(
-          `https://request.example/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}`,
+          `https://request.example/api/cli/strava/start?redirect=${encodeURIComponent(redirect)}&nonce=cli-nonce`,
         ),
       );
 
@@ -186,7 +197,9 @@ describe("Strava CLI broker routes", () => {
       });
       expect(insertTicket).toHaveBeenCalledWith(payload);
       expect(res.status).toBe(302);
-      expect(res.headers.get("location")).toBe(`${redirect}?ticket=ticket-1`);
+      expect(res.headers.get("location")).toBe(
+        `${redirect}?ticket=ticket-1&nonce=nonce`,
+      );
     });
   });
 
@@ -268,6 +281,41 @@ describe("Strava CLI broker routes", () => {
       );
 
       expect(res.status).toBe(502);
+    });
+
+    it("returns 500 when the broker OAuth configuration is missing", async () => {
+      refreshCliToken.mockResolvedValue({ ok: false, status: 500 });
+      const { POST } = await import("./refresh/route");
+      const res = await POST(
+        new Request("https://app.example/api/cli/strava/refresh", {
+          method: "POST",
+          headers: { "x-forwarded-for": "198.51.100.1" },
+          body: JSON.stringify({ refresh_token: "rt" }),
+        }),
+      );
+
+      expect(res.status).toBe(500);
+    });
+
+    it("rate limits more than 20 refreshes per minute per IP", async () => {
+      refreshCliToken.mockResolvedValue({
+        ok: false,
+        status: 400,
+      });
+      const { POST } = await import("./refresh/route");
+      let res!: Response;
+      for (let request = 0; request < 21; request += 1) {
+        res = await POST(
+          new Request("https://app.example/api/cli/strava/refresh", {
+            method: "POST",
+            headers: { "x-forwarded-for": "203.0.113.20" },
+            body: JSON.stringify({ refresh_token: "rt" }),
+          }),
+        );
+      }
+
+      expect(res.status).toBe(429);
+      expect(refreshCliToken).toHaveBeenCalledTimes(20);
     });
 
     it("returns refreshed tokens and scope", async () => {

@@ -27,6 +27,7 @@ describe("CLI authentication", () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
     rmSync(home, { recursive: true, force: true });
     delete process.env.TRUEPACE_HOME;
@@ -40,11 +41,15 @@ describe("CLI authentication", () => {
   it("redeems a ticket and writes credentials", async () => {
     const opened: string[] = [];
     const close = vi.fn();
+    vi.spyOn(console, "log").mockImplementation(() => {});
     const creds = await loginWithLoopback({
       openBrowser: (url) => opened.push(url),
       timeoutMs: 1000,
       listen: async (onTicket) => {
-        queueMicrotask(() => onTicket("t1"));
+        setTimeout(() => {
+          const nonce = new URL(opened[0]).searchParams.get("nonce")!;
+          onTicket("t1", nonce);
+        }, 0);
         return { port: 5555, close };
       },
       fetchImpl: async (input, init) => {
@@ -59,6 +64,10 @@ describe("CLI authentication", () => {
 
     expect(opened[0]).toContain(
       "redirect=http%3A%2F%2F127.0.0.1%3A5555%2Fcallback",
+    );
+    expect(opened[0]).toContain("&nonce=");
+    expect(console.log).toHaveBeenCalledWith(
+      `Open this if your browser didn't launch: ${opened[0]}`,
     );
     expect(creds.athlete.id).toBe(5);
     expect(readCredentials()?.access_token).toBe("at");
@@ -104,5 +113,36 @@ describe("CLI authentication", () => {
       "Token refresh failed",
     );
     expect(readCredentials()).toBeNull();
+  });
+
+  it("keeps credentials when refresh has a server error", async () => {
+    writeCredentials(credentials);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 502 })),
+    );
+
+    await expect(ensureFreshCredentials(100)).rejects.toThrow(
+      "Token refresh failed (502)",
+    );
+    expect(readCredentials()).toEqual(credentials);
+  });
+
+  it("ignores a loopback ticket with a mismatched nonce", async () => {
+    const fetchImpl = vi.fn();
+    vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await expect(
+      loginWithLoopback({
+        openBrowser: vi.fn(),
+        timeoutMs: 5,
+        listen: async (onTicket) => {
+          queueMicrotask(() => onTicket("attacker-ticket", "wrong-nonce"));
+          return { port: 5555, close: vi.fn() };
+        },
+        fetchImpl,
+      }),
+    ).rejects.toThrow("Login timed out");
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 });

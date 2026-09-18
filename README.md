@@ -83,7 +83,10 @@ npm run truepace -- logout
 TRUEPACE_API=http://localhost:3000 npm run truepace -- login
 ```
 
-Production Strava callback domain is already the website (`race-goal-forecaster.vercel.app`); no extra Strava “localhost” domain is required.
+Run `npm run db:push` before CLI login so the `cli_strava_tickets` table exists.
+When using `TRUEPACE_API=http://localhost:3000`, configure the Strava app's
+Authorization Callback Domain to allow `localhost`. Production uses
+`race-goal-forecaster.vercel.app`.
 
 `forecast` and `plan` prompt for distance, goal time, race date, posture, units, and a baseline race the first time (saved as `~/.truepace/goal.json`). Re-prompt with `--reset-goal`.
 

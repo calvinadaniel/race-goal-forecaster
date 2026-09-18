@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cliCallbackUrl, exchangeCliCode } from "@/lib/cli-strava/oauth";
+import { parseLoopbackRedirect } from "@/lib/cli-strava/redirect";
 import { verifyState } from "@/lib/cli-strava/state";
 import { ticketStore } from "@/lib/cli-strava/tickets";
 
@@ -38,8 +39,13 @@ export async function GET(req: Request) {
     return authorizationFailed();
   }
 
+  const redirect = parseLoopbackRedirect(state.redirect);
+  if (!redirect.ok) {
+    return authorizationFailed();
+  }
   const ticket = await ticketStore.insertTicket(exchange.payload);
-  const loopbackUrl = new URL(state.redirect);
+  const loopbackUrl = new URL(redirect.url);
   loopbackUrl.searchParams.set("ticket", ticket);
+  loopbackUrl.searchParams.set("nonce", state.nonce);
   return NextResponse.redirect(loopbackUrl, 302);
 }

@@ -32,14 +32,28 @@ async function main(): Promise<void> {
               "http://127.0.0.1",
             );
             const ticket = url.searchParams.get("ticket");
-            if (url.pathname !== "/callback" || !ticket) {
-              response.writeHead(400, { "Content-Type": "text/plain" });
+            const nonce = url.searchParams.get("nonce");
+            const isCrossSite =
+              request.headers["sec-fetch-site"] === "cross-site";
+            if (
+              url.pathname !== "/callback" ||
+              !ticket ||
+              !nonce ||
+              isCrossSite
+            ) {
+              response.writeHead(400, {
+                "Content-Type": "text/plain",
+                Connection: "close",
+              });
               response.end("Invalid callback.");
               return;
             }
-            response.writeHead(200, { "Content-Type": "text/plain" });
+            response.writeHead(200, {
+              "Content-Type": "text/plain",
+              Connection: "close",
+            });
             response.end("TruePace login complete. You may close this window.");
-            onTicket(ticket);
+            onTicket(ticket, nonce);
           });
           server.once("error", reject);
           server.listen(0, "127.0.0.1", () => {

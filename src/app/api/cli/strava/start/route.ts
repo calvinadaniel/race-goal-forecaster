@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { cliCallbackUrl } from "@/lib/cli-strava/oauth";
 import { parseLoopbackRedirect } from "@/lib/cli-strava/redirect";
@@ -11,6 +10,10 @@ export async function GET(req: Request) {
   );
   if (!redirect.ok) {
     return NextResponse.json({ error: "Invalid redirect" }, { status: 400 });
+  }
+  const nonce = requestUrl.searchParams.get("nonce");
+  if (!nonce || nonce.length > 200) {
+    return NextResponse.json({ error: "Invalid nonce" }, { status: 400 });
   }
 
   const secret = process.env.AUTH_SECRET;
@@ -26,7 +29,7 @@ export async function GET(req: Request) {
   const state = signState(
     {
       redirect: redirect.url,
-      nonce: randomUUID(),
+      nonce,
       exp: Math.floor(Date.now() / 1000) + 600,
     },
     secret,

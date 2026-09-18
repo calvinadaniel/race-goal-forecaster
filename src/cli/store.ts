@@ -44,12 +44,12 @@ function goalPath() {
 }
 
 function ensureDir() {
-  mkdirSync(truepaceDir(), { recursive: true });
+  mkdirSync(truepaceDir(), { mode: 0o700, recursive: true });
 }
 
 function writePrivate(path: string, body: string) {
   ensureDir();
-  writeFileSync(path, body, "utf8");
+  writeFileSync(path, body, { encoding: "utf8", mode: 0o600 });
   try {
     chmodSync(path, 0o600);
   } catch {
@@ -75,7 +75,8 @@ export function clearCredentials(): void {
 
 export function readGoal(): CliGoal | null {
   try {
-    return JSON.parse(readFileSync(goalPath(), "utf8")) as CliGoal;
+    const goal = JSON.parse(readFileSync(goalPath(), "utf8")) as CliGoal;
+    return DISTANCES[goal.distanceKey] ? goal : null;
   } catch {
     return null;
   }

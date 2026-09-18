@@ -8,6 +8,8 @@ import { readGoal, writeGoal } from "./store";
 export async function withRetry<T>(
   fn: () => Promise<T>,
   attempts = 3,
+  sleep: (ms: number) => Promise<void> = (ms) =>
+    new Promise((resolve) => setTimeout(resolve, ms)),
 ): Promise<T> {
   let lastError: unknown;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
@@ -22,6 +24,7 @@ export async function withRetry<T>(
       ) {
         throw error;
       }
+      await sleep(200 * 2 ** attempt);
     }
   }
   throw lastError;

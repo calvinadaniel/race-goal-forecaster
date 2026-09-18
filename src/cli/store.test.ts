@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -68,5 +68,24 @@ describe("cli store", () => {
     writeCredentials(creds);
     const mode = readFileSync(join(home, "credentials.json")).length;
     expect(mode).toBeGreaterThan(0);
+  });
+
+  it.runIf(process.platform !== "win32")(
+    "uses owner-only modes for the directory and credentials",
+    () => {
+      writeCredentials(creds);
+      expect(statSync(home).mode & 0o777).toBe(0o700);
+      expect(statSync(join(home, "credentials.json")).mode & 0o777).toBe(
+        0o600,
+      );
+    },
+  );
+
+  it("rejects a saved goal with an unknown distance key", () => {
+    writeFileSync(
+      join(home, "goal.json"),
+      JSON.stringify({ ...goal, distanceKey: "ultra" }),
+    );
+    expect(readGoal()).toBeNull();
   });
 });
