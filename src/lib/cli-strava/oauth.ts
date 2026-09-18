@@ -33,6 +33,20 @@ async function postStravaToken(
   });
 }
 
+async function parseTokenResponse(
+  resp: Response,
+): Promise<StravaTokenResponse | null> {
+  try {
+    const data: unknown = await resp.json();
+    if (typeof data !== "object" || data === null) {
+      return null;
+    }
+    return data as StravaTokenResponse;
+  } catch {
+    return null;
+  }
+}
+
 export async function exchangeCliCode(args: {
   code: string;
   redirectUri: string;
@@ -64,7 +78,10 @@ export async function exchangeCliCode(args: {
     return { ok: false, error: "http" };
   }
 
-  const data = (await resp.json()) as StravaTokenResponse;
+  const data = await parseTokenResponse(resp);
+  if (!data) {
+    return { ok: false, error: "http" };
+  }
 
   if (!hasActivityReadAll(data.scope)) {
     return { ok: false, error: "scope" };
@@ -122,7 +139,10 @@ export async function refreshCliToken(args: {
     return { ok: false, status: resp.status };
   }
 
-  const data = (await resp.json()) as StravaTokenResponse;
+  const data = await parseTokenResponse(resp);
+  if (!data) {
+    return { ok: false, status: 502 };
+  }
 
   if (
     !data.access_token ||

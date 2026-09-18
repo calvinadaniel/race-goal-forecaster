@@ -113,4 +113,32 @@ describe("refreshCliToken", () => {
     });
     expect(result).toEqual({ ok: false, status: 502 });
   });
+
+  it("rejects 200 responses with invalid JSON", async () => {
+    process.env.AUTH_STRAVA_ID = "id";
+    process.env.AUTH_STRAVA_SECRET = "secret";
+    const result = await refreshCliToken({
+      refreshToken: "old",
+      fetchImpl: async () =>
+        new Response("not json", {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+    });
+    expect(result).toEqual({ ok: false, status: 502 });
+  });
+
+  it("rejects 200 responses with null JSON", async () => {
+    process.env.AUTH_STRAVA_ID = "id";
+    process.env.AUTH_STRAVA_SECRET = "secret";
+    const result = await refreshCliToken({
+      refreshToken: "old",
+      fetchImpl: async () =>
+        new Response("null", {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+    });
+    expect(result).toEqual({ ok: false, status: 502 });
+  });
 });
