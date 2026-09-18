@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { signInAsDevPreview, signInWithGoogle } from "@/app/actions/auth";
+import {
+  signInAsDevPreview,
+  signInWithGoogle,
+  signInWithStrava,
+} from "@/app/actions/auth";
 import { BrandLogo } from "@/components/BrandLogo";
 import { GoogleIcon } from "@/components/GoogleIcon";
+import { StravaIcon } from "@/components/StravaIcon";
 import { isDevPreviewEnabled } from "@/lib/dev-preview";
 
 export default async function Home({
@@ -48,6 +53,12 @@ export default async function Home({
                 Continue with Google
               </button>
             </form>
+            <form action={signInWithStrava} className="landing__demo">
+              <button className="btn btn-ghost" type="submit">
+                <StravaIcon />
+                Continue with Strava
+              </button>
+            </form>
             {showDevPreview ? (
               <form action={signInAsDevPreview} style={{ marginTop: "0.75rem" }}>
                 <button className="btn landing__btn" type="submit">
@@ -83,7 +94,10 @@ export default async function Home({
           <article className="landing__step">
             <div className="landing__step-n">1</div>
             <h2 className="display">Create your account</h2>
-            <p>Sign in with Google. Connect Strava later if you want synced history.</p>
+            <p>
+              Sign in with Google or continue with Strava. If you used Google,
+              connect Strava later from Profile for synced history.
+            </p>
           </article>
           <article className="landing__step">
             <div className="landing__step-n">2</div>
