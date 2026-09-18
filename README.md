@@ -65,6 +65,30 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run db:push` | Push Drizzle schema to Neon |
 | `npm run build` | Production build |
 
+## CLI
+
+Local Strava login and forecast (no Google account). Tokens stay in `~/.truepace`.
+
+```bash
+npm run truepace -- login
+npm run truepace -- whoami
+npm run truepace -- forecast
+npm run truepace -- plan
+npm run truepace -- logout
+```
+
+`login` opens a browser against the TruePace broker. For a local Next server:
+
+```bash
+TRUEPACE_API=http://localhost:3000 npm run truepace -- login
+```
+
+Production Strava callback domain is already the website (`race-goal-forecaster.vercel.app`); no extra Strava “localhost” domain is required.
+
+`forecast` and `plan` prompt for distance, goal time, race date, posture, units, and a baseline race the first time (saved as `~/.truepace/goal.json`). Re-prompt with `--reset-goal`.
+
+Estimates only — not coaching or medical advice.
+
 ## Product notes
 
 - Primary sign-in is Google; Strava is an optional connection for activity sync.
