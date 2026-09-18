@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <h1 className="display my-2 text-[clamp(1.8rem,5vw,2.4rem)]">
         Privacy Policy
       </h1>
-      <p className="muted text-sm">Last updated: July 27, 2026</p>
+      <p className="muted text-sm">Last updated: September 18, 2026</p>
       <p className="muted text-sm m-0">
         Public URL:{" "}
         <a
@@ -37,12 +37,13 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold">What we collect</h2>
           <p className="muted m-0">
             <strong className="text-foreground font-semibold">Account:</strong>{" "}
-            When you sign in with Google, we store identifiers, name, email, and
-            profile image.
+            When you sign in with Google or Strava, we store identifiers, name,
+            email when the provider sends it, and profile image.
           </p>
           <p className="muted mt-3 mb-0">
-            <strong className="text-foreground font-semibold">Strava (optional):</strong>{" "}
-            If you connect Strava, we request read access (
+            <strong className="text-foreground font-semibold">Strava:</strong>{" "}
+            You can sign in with Strava or connect it later from Profile. We
+            request read access (
             <code className="mono text-sm">read</code>,{" "}
             <code className="mono text-sm">activity:read_all</code>) and store
             OAuth tokens plus authorized activity data: distance, duration, start
