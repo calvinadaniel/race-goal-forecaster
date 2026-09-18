@@ -353,6 +353,10 @@ label {
   max-width: 30rem;
 }
 
+.landing__demo {
+  margin-top: 0.75rem;
+}
+
 .landing__card {
   background: var(--surface);
   border: 1px solid var(--border);
