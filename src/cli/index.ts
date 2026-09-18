@@ -5,6 +5,8 @@ import {
   loginWithLoopback,
   openSystemBrowser,
 } from "./auth";
+import { loadForecast } from "./forecast";
+import { formatForecast, formatPlan } from "./print";
 import {
   clearCredentials,
   clearGoal,
@@ -12,7 +14,8 @@ import {
   writeCredentials,
 } from "./store";
 
-const USAGE = "Usage: npm run truepace -- <login|logout|whoami> [--all]";
+const USAGE =
+  "Usage: npm run truepace -- <login|logout|whoami|forecast|plan> [--all|--reset-goal]";
 
 async function main(): Promise<void> {
   const [cmd, ...rest] = process.argv.slice(2);
@@ -89,6 +92,19 @@ async function main(): Promise<void> {
       name = athleteDisplayName(athlete);
     }
     console.log(`${name ?? "Strava athlete"} (${credentials.athlete.id})`);
+    return;
+  }
+
+  if (cmd === "forecast" || cmd === "plan") {
+    if (!readCredentials()) {
+      console.error("Run npm run truepace -- login");
+      process.exitCode = 1;
+      return;
+    }
+    const result = await loadForecast({
+      resetGoal: rest.includes("--reset-goal"),
+    });
+    console.log(cmd === "forecast" ? formatForecast(result) : formatPlan(result));
     return;
   }
 
