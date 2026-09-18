@@ -1,4 +1,3 @@
-import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { DISTANCES, type DistanceKey } from "@/lib/forecast/distances";
 import type { Intensity } from "@/lib/forecast/postures";
@@ -133,13 +132,15 @@ async function askGoalQuestions(
 export async function promptGoal(
   io?: { question: (q: string) => Promise<string> },
 ): Promise<CliGoal> {
-  let rl: readline.Interface | undefined;
-  const question =
-    io?.question ??
-    (() => {
-      rl = readline.createInterface({ input, output });
-      return (q: string) => rl!.question(q);
-    })();
+  let rl: import("node:readline/promises").Interface | undefined;
+  let question: (q: string) => Promise<string>;
+  if (io?.question) {
+    question = io.question;
+  } else {
+    const readline = await import("node:readline/promises");
+    rl = readline.createInterface({ input, output });
+    question = (q: string) => rl!.question(q);
+  }
 
   try {
     const asOf = new Date();
