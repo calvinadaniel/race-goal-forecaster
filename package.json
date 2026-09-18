@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "truepace": "tsx src/cli/index.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.8.0",
@@ -42,6 +43,7 @@
     "eslint-config-next": "^15.5.7",
     "postgres": "^3.4.9",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5",
     "vitest": "^3.0.9"
   }
