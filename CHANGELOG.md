@@ -2,6 +2,26 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.14.0] — 2026-09-22
+
+Crosswalk UI: after sign-in you land on today's session, with a dark editorial shell.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### App
+
+- Signed-in home is **Today** (this session + one-line verdict), not Forecast
+- Primary tabs: Today, Plan, Forecast; race and profile sit off those tabs
+- Landing header **Sign in** stays Google; hero still offers Google and Strava
+
+### Look
+
+- Dark-only Crosswalk identity: signal red, asphalt slate, Atlas type
+
+### CLI
+
+- Loopback Strava login accepts the real browser callback instead of treating it as cross-site
+
 ## [1.13.0] — 2026-09-22
 
 Optional Continue with Strava on the landing page so you can start a web session without Google.
@@ -339,6 +359,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.14.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.14.0
 [1.13.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.13.0
 [1.12.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.12.0
 [1.11.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.11.0
