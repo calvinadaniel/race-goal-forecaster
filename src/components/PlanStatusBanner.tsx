@@ -30,12 +30,12 @@ export function PlanStatusBanner({
     return (
       <div
         className={cn(
-          "plan-status-banner plan-status-banner--draft flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-4 py-3",
+          "plan-status-banner plan-status-banner--draft flex flex-wrap items-center justify-between gap-3 border border-border bg-card px-4 py-3",
           className,
         )}
       >
         <div className="min-w-0">
-          <p className="eyebrow m-0">Draft plan</p>
+          <p className="plan-status-banner__title m-0">Draft plan</p>
           <p className="muted m-0 text-sm leading-relaxed">
             Week 1 is this week until you start. Starting locks your Monday and
             posture so the plan follows the calendar.
@@ -43,7 +43,7 @@ export function PlanStatusBanner({
         </div>
         <Button
           type="button"
-          className="landing__btn h-10 shrink-0 rounded-xl font-bold"
+          className="h-10 shrink-0"
           onClick={onStart}
         >
           Start plan
@@ -55,12 +55,12 @@ export function PlanStatusBanner({
   return (
     <div
       className={cn(
-        "plan-status-banner plan-status-banner--started flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-4 py-3",
+        "plan-status-banner plan-status-banner--started flex flex-wrap items-center justify-between gap-3 border border-border bg-card px-4 py-3",
         className,
       )}
     >
       <div className="min-w-0">
-        <p className="eyebrow m-0">
+        <p className="plan-status-banner__title m-0">
           Week {currentWeekIndex} of {weeksOut}
           {phase ? ` · ${phase}` : ""}
         </p>
@@ -73,7 +73,7 @@ export function PlanStatusBanner({
         <Button
           type="button"
           variant="outline"
-          className="landing__btn h-10 rounded-xl font-bold"
+          className="h-10"
           onClick={onReschedule}
         >
           Reschedule
@@ -81,7 +81,7 @@ export function PlanStatusBanner({
         <Button
           type="button"
           variant="ghost"
-          className="h-10 rounded-xl font-bold"
+          className="h-10"
           disabled={backToDraftBusy}
           onClick={onBackToDraft}
         >

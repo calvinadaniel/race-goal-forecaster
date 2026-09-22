@@ -8,7 +8,6 @@ export const metadata = {
 export default function PrivacyPage() {
   return (
     <main className="container app-page max-w-2xl py-12">
-      <p className="eyebrow m-0">TruePace</p>
       <h1 className="display my-2 text-[clamp(1.8rem,5vw,2.4rem)]">
         Privacy Policy
       </h1>

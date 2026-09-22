@@ -127,14 +127,14 @@ export function StartPlanSheet({
 
         <div className="space-y-4">
           <fieldset className="space-y-2">
-            <legend className="eyebrow m-0">Posture</legend>
+            <legend className="field-label">Posture</legend>
             <div className="flex flex-wrap gap-2">
               {(Object.keys(POSTURE_LABELS) as Intensity[]).map((id) => (
                 <Button
                   key={id}
                   type="button"
                   variant={intensity === id ? "default" : "outline"}
-                  className="landing__btn h-10 rounded-xl font-bold"
+                  className="h-10"
                   onClick={() => setIntensity(id)}
                 >
                   {POSTURE_LABELS[id]}
@@ -144,7 +144,7 @@ export function StartPlanSheet({
           </fieldset>
 
           <label className="block space-y-1.5">
-            <span className="eyebrow">Week 1 Monday</span>
+            <span className="field-label">Week 1 Monday</span>
             <input
               type="date"
               className={cn(
@@ -162,7 +162,7 @@ export function StartPlanSheet({
           <Button
             type="button"
             variant="outline"
-            className="rounded-xl font-bold"
+            className="h-10"
             disabled={busy}
             onClick={() => onOpenChange(false)}
           >
@@ -170,7 +170,7 @@ export function StartPlanSheet({
           </Button>
           <Button
             type="button"
-            className="landing__btn rounded-xl font-bold"
+            className="h-10"
             disabled={busy || !monday}
             onClick={() => void save()}
           >

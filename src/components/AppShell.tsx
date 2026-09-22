@@ -2,58 +2,102 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Flag, Target, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SHORT_DISTANCE, formatShortDate } from "@/lib/today-session";
+import { useForecastData } from "@/lib/use-forecast";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   {
+    href: "/app",
+    label: "Today",
+    match: (p: string) => p === "/app" || p === "/app/",
+  },
+  {
     href: "/app/training",
-    label: "Training",
+    label: "Plan",
     match: (p: string) => p.startsWith("/app/training"),
-    icon: Activity,
   },
   {
     href: "/app/forecast",
     label: "Forecast",
     match: (p: string) => p.startsWith("/app/forecast"),
-    icon: Target,
-  },
-  {
-    href: "/app/profile",
-    label: "Profile",
-    match: (p: string) => p.startsWith("/app/profile"),
-    icon: UserRound,
   },
 ] as const;
 
-export function AppShell({
-  children,
-  showEditGoal = true,
-  headerAction,
-}: {
-  children: ReactNode;
-  showEditGoal?: boolean;
-  headerAction?: ReactNode;
-}) {
+export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { data } = useForecastData();
+  const [avatarFailed, setAvatarFailed] = useState(false);
+
+  const dist =
+    data && (SHORT_DISTANCE[data.goal.distanceKey] ?? data.goal.distanceKey);
+  const photoSrc =
+    data && !avatarFailed && data.profile.image
+      ? data.profile.image
+      : data && !avatarFailed && data.profile.hasPhoto
+        ? "/api/avatar"
+        : undefined;
+  const initial = (data?.profile.name ?? "R").slice(0, 1).toUpperCase();
 
   return (
     <div className="app-shell">
-      <header className="app-shell__header container">
-        <BrandLogo href="/app/forecast" />
-        <div className="app-shell__actions">
-          {headerAction}
-          {showEditGoal && (
-            <Button asChild className="landing__btn h-10 rounded-xl px-4 font-bold">
-              <Link href="/app/goal">
-                <Flag className="size-4" />
-                Edit goal
+      <header className="app-shell__header">
+        <div className="app-shell__header-inner container">
+          <BrandLogo href="/app" />
+          <nav className="app-nav" aria-label="Primary">
+            {TABS.map((tab) => {
+              const active = tab.match(pathname);
+              return (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  className={cn("app-nav__link", active && "app-nav__link--active")}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {tab.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="app-shell__actions">
+            {data ? (
+              <Link
+                href="/app/goal"
+                className="race-chip"
+                title="Edit goal"
+              >
+                <span>{dist}</span>
+                <span className="race-chip__date">
+                  {formatShortDate(data.goal.raceDate)}
+                </span>
               </Link>
-            </Button>
-          )}
+            ) : (
+              <Skeleton className="h-8 w-28" />
+            )}
+            <Link
+              href="/app/profile"
+              className="app-avatar-link"
+              aria-label="Profile"
+            >
+              <Avatar className="size-8">
+                {photoSrc ? (
+                  <AvatarImage
+                    key={photoSrc}
+                    src={photoSrc}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    onError={() => setAvatarFailed(true)}
+                  />
+                ) : null}
+                <AvatarFallback>{initial}</AvatarFallback>
+              </Avatar>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -62,7 +106,6 @@ export function AppShell({
       <nav className="app-tabbar" aria-label="Primary">
         {TABS.map((tab) => {
           const active = tab.match(pathname);
-          const Icon = tab.icon;
           return (
             <Link
               key={tab.href}
@@ -70,7 +113,6 @@ export function AppShell({
               className={cn("app-tab", active && "app-tab--active")}
               aria-current={active ? "page" : undefined}
             >
-              <Icon className="size-5" strokeWidth={active ? 2.4 : 1.9} />
               {tab.label}
             </Link>
           );

@@ -35,7 +35,7 @@ function LogoMark({ className }: { className?: string }) {
 }
 
 export function BrandLogo({
-  href = "/app/forecast",
+  href = "/app",
   className,
   asLink = true,
 }: {

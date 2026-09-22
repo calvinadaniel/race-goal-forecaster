@@ -9,7 +9,7 @@ export async function logOut() {
 }
 
 export async function signInWithGoogle() {
-  await signIn("google", { redirectTo: "/app/forecast" });
+  await signIn("google", { redirectTo: "/app" });
 }
 
 /** Secondary landing CTA: Strava session without Google. */
@@ -24,7 +24,7 @@ export async function signInAsDevPreview() {
   }
   await signIn("dev-preview", {
     preview: "1",
-    redirectTo: "/app/forecast",
+    redirectTo: "/app",
   });
 }
 

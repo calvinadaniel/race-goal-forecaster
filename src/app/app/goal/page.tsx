@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AppShell } from "@/components/AppShell";
 import { DISTANCE_LIST } from "@/lib/forecast/distances";
 import { formatDuration, parseDuration } from "@/lib/units";
 
@@ -74,7 +73,7 @@ export default function EditGoalPage() {
         }),
       });
       if (!res.ok) throw new Error("Save failed");
-      router.push("/app/forecast");
+      router.push("/app");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
@@ -85,23 +84,18 @@ export default function EditGoalPage() {
 
   if (!loaded) {
     return (
-      <AppShell showEditGoal={false}>
-        <main className="container app-page">
-          <p className="muted">Loading…</p>
-        </main>
-      </AppShell>
+      <main className="container app-page">
+        <p className="muted">Loading…</p>
+      </main>
     );
   }
 
   return (
-    <AppShell showEditGoal={false}>
-      <main className="container app-page">
-      <Link className="mono muted" href="/app/forecast" style={{ fontSize: "0.8rem" }}>
-        ← Back to forecast
+    <main className="container app-page">
+      <Link className="back-link" href="/app">
+        Back to today
       </Link>
-      <h1 className="display" style={{ fontSize: "2.4rem", margin: "0.75rem 0 1rem" }}>
-        Edit goal
-      </h1>
+      <h1 className="display goal-title">Edit goal</h1>
       <form className="card form-grid" onSubmit={onSubmit}>
         <div className="form-grid two">
           <label>
@@ -144,12 +138,11 @@ export default function EditGoalPage() {
           </label>
         </div>
 
-        <label style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+        <label className="checkbox-row">
           <input
             type="checkbox"
             checked={useBaseline}
             onChange={(e) => setUseBaseline(e.target.checked)}
-            style={{ width: "auto" }}
           />
           Manual baseline race
         </label>
@@ -184,12 +177,11 @@ export default function EditGoalPage() {
           </div>
         )}
 
-        {error && <p style={{ color: "var(--danger)", margin: 0 }}>{error}</p>}
-        <button className="btn btn-primary landing__btn" type="submit" disabled={busy}>
+        {error && <p className="form-error">{error}</p>}
+        <button className="btn btn-primary" type="submit" disabled={busy}>
           {busy ? "Saving…" : "Save changes"}
         </button>
       </form>
-      </main>
-    </AppShell>
+    </main>
   );
 }

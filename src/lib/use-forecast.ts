@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Units } from "@/lib/units";
 
 export type ForecastPayload = {
@@ -121,7 +129,7 @@ export const VERDICT_LABEL = {
   unlikely: "Unlikely",
 } as const;
 
-export function useForecastData() {
+function useForecastDataState() {
   const [data, setData] = useState<ForecastPayload | null>(null);
   const [units, setUnits] = useState<Units>("mi");
   const [error, setError] = useState<string | null>(null);
@@ -165,4 +173,21 @@ export function useForecastData() {
   }
 
   return { data, units, error, busy, load, refresh };
+}
+
+type ForecastContextValue = ReturnType<typeof useForecastDataState>;
+
+const ForecastContext = createContext<ForecastContextValue | null>(null);
+
+export function ForecastProvider({ children }: { children: ReactNode }) {
+  const value = useForecastDataState();
+  return createElement(ForecastContext.Provider, { value }, children);
+}
+
+export function useForecastData() {
+  const ctx = useContext(ForecastContext);
+  if (!ctx) {
+    throw new Error("useForecastData must be used within ForecastProvider");
+  }
+  return ctx;
 }

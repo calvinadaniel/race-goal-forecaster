@@ -16,7 +16,7 @@ export default function DevPreviewEnterPage() {
       <div className="landing__wrap" style={{ paddingTop: "4rem" }}>
         <p className="landing__lead">Signing in as Demo Runner…</p>
         <form ref={formRef} action={signInAsDevPreview}>
-          <button className="btn btn-primary landing__btn" type="submit">
+          <button className="btn btn-primary" type="submit">
             Continue as Demo Runner
           </button>
         </form>

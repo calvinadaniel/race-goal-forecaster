@@ -93,7 +93,7 @@ export default function OnboardingPage() {
         }),
       });
       if (!goalRes.ok) throw new Error("Could not save goal");
-      router.push("/app/forecast");
+      router.push("/app");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -112,12 +112,12 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="container" style={{ padding: "2rem 0 4rem" }}>
-      <p className="eyebrow">Onboarding</p>
-      <h1 className="display" style={{ fontSize: "clamp(2rem, 6vw, 3rem)", margin: "0.4rem 0 0.5rem" }}>
+    <main className="container onboarding">
+      <BrandLogo href="/" />
+      <h1 className="display onboarding__title">
         Set your race goal
       </h1>
-      <p className="muted" style={{ marginBottom: "1.5rem", maxWidth: "36rem" }}>
+      <p className="muted onboarding__lead">
         Add a recent race or time trial as your baseline so we can forecast.
         Connect Strava anytime from Profile for synced history.
       </p>
@@ -170,9 +170,7 @@ export default function OnboardingPage() {
         </div>
 
         <div>
-          <p className="eyebrow" style={{ marginBottom: "0.75rem" }}>
-            Required baseline
-          </p>
+          <h2 className="section-title">Required baseline</h2>
           <div className="form-grid two">
             <label>
               Baseline distance

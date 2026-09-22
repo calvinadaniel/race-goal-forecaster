@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, RefreshCw, Route } from "lucide-react";
 import { logOut } from "@/app/actions/auth";
-import { AppShell } from "@/components/AppShell";
+import { StravaConnectionCard } from "@/components/StravaConnectionCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,36 +12,31 @@ import { SurfaceCard } from "@/components/ui-surface";
 import { DISTANCES, type DistanceKey } from "@/lib/forecast/distances";
 import { formatDuration } from "@/lib/units";
 import { useForecastData } from "@/lib/use-forecast";
-import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
-  const { data, error, busy, refresh } = useForecastData();
+  const { data, error, refresh } = useForecastData();
   const [avatarFailed, setAvatarFailed] = useState(false);
 
   if (error) {
     return (
-      <AppShell>
-        <main className="container app-page">
-          <p className="text-destructive">{error}</p>
-        </main>
-      </AppShell>
+      <main className="container app-page">
+        <p className="text-destructive">{error}</p>
+      </main>
     );
   }
 
   if (!data) {
     return (
-      <AppShell>
-        <main className="container app-page space-y-4">
-          <div className="flex items-center gap-4">
-            <Skeleton className="size-[72px] rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-8 w-40" />
-            </div>
+      <main className="container app-page space-y-4">
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-[72px] rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-4 w-56" />
           </div>
-          <Skeleton className="h-36 rounded-xl" />
-        </main>
-      </AppShell>
+        </div>
+        <Skeleton className="h-36" />
+      </main>
     );
   }
 
@@ -60,108 +54,77 @@ export default function ProfilePage() {
         : undefined;
 
   return (
-    <AppShell
-      headerAction={
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            className="landing__btn h-10 rounded-xl font-bold"
-            type="button"
-            onClick={() => {
-              setAvatarFailed(false);
-              void refresh();
-            }}
-            disabled={busy}
-          >
-            <RefreshCw className={cn("size-4", busy && "animate-spin")} />
-            {busy ? "Refreshing…" : "Refresh"}
-          </Button>
-          <form action={logOut}>
-            <Button
-              variant="outline"
-              className="landing__btn h-10 rounded-xl font-bold"
-              type="submit"
-            >
-              <LogOut className="size-4" />
-              Log out
-            </Button>
-          </form>
+    <main className="container app-page">
+      <div className="profile-hero">
+        <Avatar className="profile-hero__avatar size-[72px]">
+          {photoSrc ? (
+            <AvatarImage
+              key={photoSrc}
+              src={photoSrc}
+              alt=""
+              referrerPolicy="no-referrer"
+              onError={() => setAvatarFailed(true)}
+            />
+          ) : null}
+          <AvatarFallback className="profile-hero__avatar--placeholder">
+            {(profile.name ?? "R").slice(0, 1).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h1 className="display my-1 text-[1.85rem] leading-tight">
+            {profile.name ?? "Runner"}
+          </h1>
+          <p className="muted m-0 leading-relaxed">
+            Account, baseline, and connections
+          </p>
         </div>
-      }
-    >
-      <main className="container app-page">
-        <div className="profile-hero">
-          <Avatar className="profile-hero__avatar size-[72px] border border-border shadow-sm">
-            {photoSrc ? (
-              <AvatarImage
-                key={photoSrc}
-                src={photoSrc}
-                alt=""
-                referrerPolicy="no-referrer"
-                onError={() => setAvatarFailed(true)}
-              />
-            ) : null}
-            <AvatarFallback className="profile-hero__avatar--placeholder bg-[var(--surface)] text-[var(--pine)] text-2xl font-bold">
-              {(profile.name ?? "R").slice(0, 1).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="eyebrow m-0">Profile</p>
-            <h1 className="display my-1 text-[clamp(1.8rem,5vw,2.6rem)]">
-              {profile.name ?? "Runner"}
-            </h1>
-            <p className="muted m-0 leading-relaxed">
-              Account &amp; race baseline for your forecast
-            </p>
-          </div>
-        </div>
+      </div>
 
-        <section className="app-section">
-          <SurfaceCard
-            interactive={false}
-            className="border-primary/35 shadow-[0_12px_28px_var(--accent-soft)]"
-          >
-            <CardHeader className="gap-2">
-              <div className="flex items-center gap-2 text-primary">
-                <Route className="size-4" />
-                <CardDescription className="eyebrow m-0 text-[0.7rem] tracking-[0.14em] text-primary">
-                  Race baseline
-                </CardDescription>
-              </div>
-              {baseline && baselineLabel ? (
-                <>
-                  <CardTitle className="display text-[clamp(1.6rem,4vw,2.2rem)]">
-                    {baselineLabel}
-                  </CardTitle>
-                  <p className="mono m-0 text-3xl font-medium">
-                    {formatDuration(baseline.timeSec)}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <CardTitle className="display text-xl">No baseline yet</CardTitle>
-                  <CardDescription className="m-0 text-base leading-relaxed">
-                    Add a recent race result so we can project your goal finish.
-                  </CardDescription>
-                </>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {baseline ? (
-                <p className="muted m-0 text-sm leading-relaxed">
-                  Recorded {baseline.date}. This anchors your forecast until activity
-                  sync is available.
+      <section className="app-section">
+        <h2 className="section-title">Race baseline</h2>
+        <SurfaceCard interactive={false}>
+          <CardHeader className="gap-2">
+            {baseline && baselineLabel ? (
+              <>
+                <CardTitle className="display text-[1.6rem]">
+                  {baselineLabel}
+                </CardTitle>
+                <p className="mono m-0 text-3xl font-medium">
+                  {formatDuration(baseline.timeSec)}
                 </p>
-              ) : null}
-              <Button asChild className="landing__btn h-10 rounded-xl font-bold">
-                <Link href="/app/goal">
-                  {baseline ? "Edit baseline" : "Add baseline"}
-                </Link>
-              </Button>
-            </CardContent>
-          </SurfaceCard>
-        </section>
-      </main>
-    </AppShell>
+              </>
+            ) : (
+              <>
+                <CardTitle className="display text-xl">No baseline yet</CardTitle>
+                <CardDescription className="m-0 text-base leading-relaxed">
+                  Add a recent race so the forecast has something to project from.
+                </CardDescription>
+              </>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {baseline ? (
+              <p className="muted m-0 text-sm leading-relaxed">
+                Recorded {baseline.date}. This anchors your forecast until
+                activity sync is available.
+              </p>
+            ) : null}
+            <Button asChild>
+              <Link href="/app/goal">
+                {baseline ? "Edit baseline" : "Add baseline"}
+              </Link>
+            </Button>
+          </CardContent>
+        </SurfaceCard>
+      </section>
+
+      <StravaConnectionCard onChanged={() => void refresh()} />
+
+      <form action={logOut} className="mt-8">
+        <Button variant="outline" type="submit">
+          Log out
+        </Button>
+      </form>
+    </main>
   );
 }

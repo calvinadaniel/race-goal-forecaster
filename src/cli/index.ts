@@ -5,6 +5,7 @@ import {
   loginWithLoopback,
   openSystemBrowser,
 } from "./auth";
+import { parseLoopbackCallbackRequest } from "./loopback-callback";
 import { loadForecast } from "./forecast";
 import { formatForecast, formatPlan } from "./print";
 import {
@@ -27,20 +28,11 @@ async function main(): Promise<void> {
       listen: async (onTicket) =>
         new Promise((resolve, reject) => {
           const server = createServer((request, response) => {
-            const url = new URL(
-              request.url ?? "/",
-              "http://127.0.0.1",
-            );
-            const ticket = url.searchParams.get("ticket");
-            const nonce = url.searchParams.get("nonce");
-            const isCrossSite =
-              request.headers["sec-fetch-site"] === "cross-site";
-            if (
-              url.pathname !== "/callback" ||
-              !ticket ||
-              !nonce ||
-              isCrossSite
-            ) {
+            const parsed = parseLoopbackCallbackRequest({
+              url: request.url ?? "/",
+              secFetchSite: request.headers["sec-fetch-site"],
+            });
+            if (!parsed.ok) {
               response.writeHead(400, {
                 "Content-Type": "text/plain",
                 Connection: "close",
@@ -53,7 +45,7 @@ async function main(): Promise<void> {
               Connection: "close",
             });
             response.end("TruePace login complete. You may close this window.");
-            onTicket(ticket, nonce);
+            onTicket(parsed.ticket, parsed.nonce);
           });
           server.once("error", reject);
           server.listen(0, "127.0.0.1", () => {

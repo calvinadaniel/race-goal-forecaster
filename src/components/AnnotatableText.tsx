@@ -23,7 +23,7 @@ export function AnnotatableText({
             key={`${p.type}-${i}-${p.value}`}
             type="button"
             aria-label={`What is ${p.value}?`}
-            className="border-0 bg-transparent p-0 underline decoration-dotted underline-offset-2 text-primary cursor-pointer"
+            className="border-0 bg-transparent p-0 underline decoration-dotted underline-offset-4 cursor-pointer"
             onClick={() => openTerm(p.termId)}
           >
             {p.value}

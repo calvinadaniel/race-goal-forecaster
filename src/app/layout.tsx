@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import {
   IBM_Plex_Mono,
-  Outfit,
   Source_Sans_3,
   Source_Serif_4,
 } from "next/font/google";
@@ -25,11 +24,6 @@ const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
 });
 
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-plan",
-});
-
 export const metadata: Metadata = {
   title: "TruePace",
   description: "See if you'll hit your goal time — Strava-connected race finish forecast.",
@@ -47,7 +41,6 @@ export default function RootLayout({
         sourceSerif.variable,
         sourceSans.variable,
         plexMono.variable,
-        outfit.variable,
         "font-sans",
         "dark",
       )}

@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Link2, Loader2, Unplug } from "lucide-react";
+import { Loader2, Unplug } from "lucide-react";
 import { connectStrava } from "@/app/actions/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
-import { SectionHeading, SurfaceCard } from "@/components/ui-surface";
+import { SurfaceCard } from "@/components/ui-surface";
 
 export function StravaConnectionCard({ onChanged }: { onChanged?: () => void }) {
   const [strava, setStrava] = useState<boolean | null>(null);
@@ -51,7 +51,7 @@ export function StravaConnectionCard({ onChanged }: { onChanged?: () => void }) 
 
   return (
     <section className="app-section">
-      <SectionHeading icon={Link2} title="Connections" />
+      <h2 className="section-title">Connections</h2>
       <SurfaceCard interactive={false}>
         <CardContent className="space-y-0 px-0 py-0">
           {error ? (
@@ -81,7 +81,7 @@ export function StravaConnectionCard({ onChanged }: { onChanged?: () => void }) 
                   <Button
                     type="submit"
                     size="sm"
-                    className="rounded-xl font-bold"
+                    className="h-8"
                     disabled={busy}
                   >
                     Connect Strava
@@ -93,7 +93,7 @@ export function StravaConnectionCard({ onChanged }: { onChanged?: () => void }) 
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="rounded-xl font-bold"
+                  className="h-8"
                   disabled={busy}
                   onClick={() => void disconnect()}
                 >

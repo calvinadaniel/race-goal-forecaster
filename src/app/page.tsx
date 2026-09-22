@@ -19,7 +19,7 @@ export default async function Home({
   const session = await auth();
   const params = await searchParams;
   if (session?.user) {
-    redirect(params.callbackUrl || "/app/forecast");
+    redirect(params.callbackUrl || "/app");
   }
 
   const showDevPreview = isDevPreviewEnabled();
@@ -30,38 +30,36 @@ export default async function Home({
         <header className="landing__header">
           <BrandLogo asLink={false} />
           <form action={signInWithGoogle}>
-            <button className="btn btn-primary landing__btn" type="submit">
-              <GoogleIcon />
-              Continue with Google
+            <button className="btn btn-ghost" type="submit">
+              Sign in
             </button>
           </form>
         </header>
 
         <section className="landing__hero">
           <div>
-            <p className="landing__kicker">See if you&apos;ll hit your goal time</p>
             <h1 className="landing__title display">
-              Your plan starts with an honest finish time.
+              See if you&apos;ll hit your goal time.
             </h1>
             <p className="landing__lead">
-              Goal-first coaching flow — set the race, set the intensity, see a
-              clear verdict before you commit to the block.
+              Set the race and a recent result. Get a verdict before you commit
+              to the block.
             </p>
             <form action={signInWithGoogle}>
-              <button className="btn btn-primary landing__btn" type="submit">
+              <button className="btn btn-primary" type="submit">
                 <GoogleIcon />
                 Continue with Google
               </button>
             </form>
             <form action={signInWithStrava} className="landing__demo">
-              <button className="btn btn-ghost landing__btn" type="submit">
+              <button className="btn btn-ghost" type="submit">
                 <StravaIcon />
                 Continue with Strava
               </button>
             </form>
             {showDevPreview ? (
-              <form action={signInAsDevPreview} style={{ marginTop: "0.75rem" }}>
-                <button className="btn landing__btn" type="submit">
+              <form action={signInAsDevPreview} className="landing__demo">
+                <button className="btn btn-ghost" type="submit">
                   Continue as Demo Runner
                 </button>
               </form>
@@ -78,38 +76,33 @@ export default async function Home({
               <div className="landing__day landing__day--on">S</div>
               <div className="landing__day">S</div>
             </div>
-            <p className="landing__v-label">Today&apos;s forecast</p>
             <p className="landing__v-status display">On track</p>
-            <p className="landing__v-time display">
+            <p className="landing__v-time mono">
               1:42:18 <span>goal 1:45:00</span>
             </p>
             <p className="landing__v-note">
-              Balanced posture · Half · Oct 18. Built from your baseline race or
-              synced efforts + weekly volume.
+              Half · Oct 18. Built from a baseline race or synced efforts.
             </p>
           </aside>
         </section>
 
-        <section className="landing__steps" id="how">
-          <article className="landing__step">
-            <div className="landing__step-n">1</div>
+        <ol className="landing__steps">
+          <li>
             <h2 className="display">Create your account</h2>
             <p>
               Sign in with Google or continue with Strava. If you used Google,
               connect Strava later from Profile for synced history.
             </p>
-          </article>
-          <article className="landing__step">
-            <div className="landing__step-n">2</div>
+          </li>
+          <li>
             <h2 className="display">Set the race</h2>
             <p>Distance, target time, race date, and a recent race baseline.</p>
-          </article>
-          <article className="landing__step">
-            <div className="landing__step-n">3</div>
+          </li>
+          <li>
             <h2 className="display">Get the verdict</h2>
-            <p>On track / At risk / Unlikely — plus what-if intensity scenarios.</p>
-          </article>
-        </section>
+            <p>On track, at risk, or unlikely — plus what happens if intensity changes.</p>
+          </li>
+        </ol>
 
         <footer className="landing__footer">
           <p>
@@ -118,7 +111,7 @@ export default async function Home({
             safely and consult a professional when needed.
           </p>
           <p>
-            <Link href="/privacy" className="underline-offset-4 hover:underline">
+            <Link href="/privacy" className="landing__privacy">
               Privacy Policy
             </Link>
           </p>
