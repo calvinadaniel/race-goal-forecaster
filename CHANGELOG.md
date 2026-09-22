@@ -2,6 +2,18 @@
 
 All notable changes to Race Goal Forecaster are documented here.
 
+## [1.13.0] — 2026-09-22
+
+Optional Continue with Strava on the landing page so you can start a web session without Google.
+
+**Live:** [https://race-goal-forecaster.vercel.app](https://race-goal-forecaster.vercel.app)
+
+### Account
+
+- Landing hero adds **Continue with Strava** under Google; header **Sign in** stays Google
+- New Strava sessions go to onboarding; returning runners with a goal go to Today
+- Privacy policy covers Strava as a sign-in as well as a later connection
+
 ## [1.12.0] — 2026-09-18
 
 Log in with Strava from the command line, then print a forecast and plan from your activities.
@@ -327,6 +339,7 @@ First public release of **Race Goal Forecaster** — a free Strava-connected app
 - Place data is not available from Strava; “races completed” means activities marked as race
 - Garmin / COROS / Apple Health are not connected yet (`ActivitySource` is ready for later)
 
+[1.13.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.13.0
 [1.12.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.12.0
 [1.11.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.11.0
 [1.10.0]: https://github.com/calvinadaniel/race-goal-forecaster/releases/tag/v1.10.0
